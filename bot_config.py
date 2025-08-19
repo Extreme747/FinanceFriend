@@ -20,7 +20,7 @@ class BotConfig:
             'role': 'student'
         },
         '@Extreme747': {
-            'name': 'bot_owner',
+            'name': 'Extreme',
             'role': 'admin'
         }
     }

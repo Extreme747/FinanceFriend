@@ -5,6 +5,7 @@ This is a Telegram bot designed for cryptocurrency and stock market education. T
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
+Bot display name: User prefers to be called "Extreme" rather than "bot_owner".
 
 # System Architecture
 
