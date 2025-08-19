@@ -6,6 +6,8 @@ This is a Telegram bot designed for cryptocurrency and stock market education. T
 
 Preferred communication style: Simple, everyday language.
 Bot display name: User prefers to be called "Extreme" rather than "bot_owner".
+Group chat behavior: Bot should only respond when tagged or when someone replies to its messages, not to every message.
+Friend recognition: Bot recognizes @Er_Stranger as "Neel", @Nexxxyzz as "Nex", @pr_amod18 as "Pramod".
 
 # System Architecture
 

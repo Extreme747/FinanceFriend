@@ -8,15 +8,15 @@ class BotConfig:
     # Known users with their telegram handles and names
     KNOWN_USERS = {
         '@Er_Stranger': {
-            'name': 'neel',
+            'name': 'Neel',
             'role': 'student'
         },
         '@Nexxxyzz': {
-            'name': 'nex',
+            'name': 'Nex',
             'role': 'student'
         },
         '@pr_amod18': {
-            'name': 'pramod',
+            'name': 'Pramod',
             'role': 'student'
         },
         '@Extreme747': {
@@ -59,8 +59,14 @@ class BotConfig:
     @classmethod
     def get_user_by_username(cls, username):
         """Get user info by username"""
+        if not username:
+            return None
+        
+        # Handle both @username and username formats
+        search_username = username if username.startswith('@') else f"@{username}"
+        
         for handle, info in cls.KNOWN_USERS.items():
-            if handle.lower() == f"@{username}".lower():
+            if handle.lower() == search_username.lower():
                 return info
         return None
     

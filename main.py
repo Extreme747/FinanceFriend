@@ -214,6 +214,17 @@ Let's start your financial education journey! What would you like to learn about
         """Handle general messages with Gemini AI"""
         if not update.effective_user or not update.message or not update.message.text:
             return
+        
+        # In group chats, only respond if bot is mentioned or message is a reply to bot
+        if update.message.chat.type in ['group', 'supergroup']:
+            bot_username = context.bot.username
+            is_mentioned = f"@{bot_username}" in update.message.text if bot_username else False
+            is_reply_to_bot = (update.message.reply_to_message and 
+                             update.message.reply_to_message.from_user and
+                             update.message.reply_to_message.from_user.is_bot)
+            
+            if not (is_mentioned or is_reply_to_bot):
+                return
             
         user = update.effective_user
         user_id = user.id

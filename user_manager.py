@@ -22,7 +22,12 @@ class UserManager:
         existing_user = self.data_manager.get_user_data(user_id)
         
         # Check if user is in known users list
-        known_user_info = self.config.get_user_by_username(username) if username else None
+        known_user_info = None
+        if username:
+            known_user_info = self.config.get_user_by_username(username)
+            if not known_user_info:
+                # Also try with @ prefix if not found
+                known_user_info = self.config.get_user_by_username(f"@{username}")
         
         user_data = {
             'user_id': user_id,
