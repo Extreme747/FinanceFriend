@@ -240,7 +240,9 @@ Let's start your financial education journey! What would you like to learn about
             # Update user activity
             self.progress_tracker.update_user_activity(user_id, message_text)
             
-            await update.message.reply_text(ai_response, parse_mode=ParseMode.MARKDOWN)
+            # Clean the AI response to avoid Markdown parsing issues
+            clean_response = self._clean_markdown_response(ai_response)
+            await update.message.reply_text(clean_response)
             
         except Exception as e:
             logger.error(f"Error getting AI response: {e}")
@@ -292,6 +294,29 @@ Please respond to the user's message considering their learning progress and con
             formatted.append(f"Bot: {memory.get('ai_response', '')}")
         
         return "\n".join(formatted)
+    
+    def _clean_markdown_response(self, response):
+        """Clean markdown formatting that might cause Telegram parsing errors"""
+        import re
+        
+        # Remove problematic markdown characters that often cause parsing errors
+        # Keep basic formatting but remove complex markdown
+        cleaned = response
+        
+        # Remove bold markdown ** that might not be properly closed
+        cleaned = re.sub(r'\*\*([^*]+)\*\*', r'\1', cleaned)
+        
+        # Remove italic markdown * that might cause issues
+        cleaned = re.sub(r'\*([^*]+)\*', r'\1', cleaned)
+        
+        # Remove code blocks that might cause issues
+        cleaned = re.sub(r'```[^`]*```', r'[code block]', cleaned)
+        cleaned = re.sub(r'`([^`]+)`', r'"\1"', cleaned)
+        
+        # Remove links that might cause parsing issues
+        cleaned = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', cleaned)
+        
+        return cleaned
 
     async def error_handler(self, update: object, context: ContextTypes.DEFAULT_TYPE):
         """Error handler"""
