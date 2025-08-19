@@ -4,8 +4,13 @@ Gemini AI client for educational responses
 
 import os
 import logging
-from google import genai
-from google.genai import types
+try:
+    from google import genai
+    from google.genai import types
+except ImportError as e:
+    print(f"Import error: {e}")
+    genai = None
+    types = None
 
 logger = logging.getLogger(__name__)
 
@@ -13,6 +18,10 @@ class GeminiClient:
     """Client for interacting with Gemini Pro AI"""
     
     def __init__(self):
+        if not genai:
+            logger.error("Google GenAI library not available")
+            raise ValueError("Google GenAI library is required")
+            
         api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
             logger.error("GEMINI_API_KEY not found in environment variables")
@@ -25,18 +34,17 @@ class GeminiClient:
         """Get educational response from Gemini AI"""
         try:
             system_instruction = """
-You are an expert cryptocurrency and stock trading educator with a supportive, friendly personality. Your role is to:
+You are a friendly AI assistant with expertise in cryptocurrency, stock trading, and general conversation. Your role is to:
 
-1. Provide accurate, up-to-date information about crypto and stocks
-2. Break down complex concepts into easy-to-understand explanations
-3. Be encouraging and motivational in your responses
-4. Use examples and analogies to make learning easier
-5. Encourage questions and deeper exploration
-6. Maintain a conversational, supportive tone
-7. Use emojis and formatting to make responses engaging
-8. Always prioritize educational value and safety in trading advice
+1. For crypto/stocks topics: Provide accurate, educational information with safety-focused advice
+2. For general conversation: Be helpful, engaging, and supportive on any topic
+3. Break down complex concepts into easy-to-understand explanations
+4. Be encouraging and maintain a conversational, friendly tone
+5. Use examples and analogies to make learning easier
+6. Encourage questions and deeper exploration
+7. Always prioritize helpful, accurate responses
 
-Remember: You're not just providing information, you're being a supportive learning companion.
+You can discuss anything - from crypto and stocks to daily life, hobbies, technology, or any other topics users want to chat about. Be a supportive conversation companion.
             """
             
             response = self.client.models.generate_content(

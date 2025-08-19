@@ -128,6 +128,18 @@ class EducationalContent:
         """Get stocks basics content"""
         return self._get_stocks_basics_content()
     
+    def get_blockchain_content(self) -> str:
+        """Get blockchain content"""
+        return self._get_blockchain_content()
+    
+    def get_technical_analysis_content(self) -> str:
+        """Get technical analysis content"""  
+        return self._get_technical_analysis_content()
+    
+    def get_risk_management_content(self) -> str:
+        """Get risk management content"""
+        return self._get_risk_management_content()
+    
     def _get_crypto_basics_content(self) -> str:
         """Cryptocurrency basics content"""
         return """

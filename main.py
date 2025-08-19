@@ -123,9 +123,9 @@ Let's start your financial education journey! What would you like to learn about
         
         for module_id, module in modules.items():
             status = "✅" if module_id in user_progress.get('completed_modules', []) else "📖"
-            message += f"{status} **{module['title']}**\n"
-            message += f"   └ {module['description']}\n"
-            message += f"   └ Use: /module_{module_id}\n\n"
+            message += f"{status} {module['title']}\n"
+            message += f"   - {module['description']}\n"
+            message += f"   - Use: /{module_id}\n\n"
         
         clean_message = self._clean_markdown_response(message)
         await update.message.reply_text(clean_message)
@@ -164,19 +164,19 @@ Let's start your financial education journey! What would you like to learn about
         
         display_name = user_info.get('display_name', 'Student')
         
-        message = f"📊 **Learning Progress for {display_name}**\n\n"
-        message += f"🎯 **Overall Progress:** {progress.get('overall_score', 0)}%\n"
-        message += f"📅 **Days Learning:** {progress.get('days_active', 0)}\n"
-        message += f"🏆 **Completed Modules:** {len(progress.get('completed_modules', []))}\n"
-        message += f"❓ **Quizzes Taken:** {progress.get('quizzes_completed', 0)}\n\n"
+        message = f"📊 Learning Progress for {display_name}\n\n"
+        message += f"🎯 Overall Progress: {progress.get('overall_score', 0)}%\n"
+        message += f"📅 Days Learning: {progress.get('days_active', 0)}\n"
+        message += f"🏆 Completed Modules: {len(progress.get('completed_modules', []))}\n"
+        message += f"❓ Quizzes Taken: {progress.get('quizzes_completed', 0)}\n\n"
         
         if progress.get('recent_topics'):
-            message += "📚 **Recent Topics:**\n"
+            message += "📚 Recent Topics:\n"
             for topic in progress['recent_topics'][-5:]:
                 message += f"• {topic}\n"
         
         if progress.get('achievements'):
-            message += "\n🏅 **Achievements:**\n"
+            message += "\n🏅 Achievements:\n"
             for achievement in progress['achievements']:
                 message += f"🏆 {achievement}\n"
         
@@ -189,8 +189,8 @@ Let's start your financial education journey! What would you like to learn about
             return
         quiz_question = self.educational_content.get_random_quiz()
         
-        message = f"🧠 **Quiz Time!**\n\n"
-        message += f"**Question:** {quiz_question['question']}\n\n"
+        message = f"🧠 Quiz Time!\n\n"
+        message += f"Question: {quiz_question['question']}\n\n"
         
         for i, option in enumerate(quiz_question['options'], 1):
             message += f"{i}. {option}\n"
@@ -209,6 +209,37 @@ Let's start your financial education journey! What would you like to learn about
         
         reset_message = "Progress Reset Complete! Your learning progress has been reset. Ready to start fresh! Use /learn to begin again."
         await update.message.reply_text(reset_message)
+
+    # Learning module specific handlers
+    async def blockchain_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Blockchain learning command"""
+        if not update.effective_user or not update.message:
+            return
+        user_id = update.effective_user.id
+        content = self.educational_content.get_blockchain_content()
+        self.progress_tracker.update_progress(user_id, 'blockchain', 'started')
+        clean_content = self._clean_markdown_response(content)
+        await update.message.reply_text(clean_content)
+
+    async def technical_analysis_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Technical analysis learning command"""
+        if not update.effective_user or not update.message:
+            return
+        user_id = update.effective_user.id
+        content = self.educational_content.get_technical_analysis_content()
+        self.progress_tracker.update_progress(user_id, 'technical_analysis', 'started')
+        clean_content = self._clean_markdown_response(content)
+        await update.message.reply_text(clean_content)
+
+    async def risk_management_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Risk management learning command"""
+        if not update.effective_user or not update.message:
+            return
+        user_id = update.effective_user.id
+        content = self.educational_content.get_risk_management_content()
+        self.progress_tracker.update_progress(user_id, 'risk_management', 'started')
+        clean_content = self._clean_markdown_response(content)
+        await update.message.reply_text(clean_content)
 
     async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle general messages with Gemini AI"""
@@ -376,6 +407,13 @@ def main():
     application.add_handler(CommandHandler("progress", bot.progress_command))
     application.add_handler(CommandHandler("quiz", bot.quiz_command))
     application.add_handler(CommandHandler("reset", bot.reset_command))
+    
+    # Add module-specific handlers
+    application.add_handler(CommandHandler("crypto_basics", bot.crypto_command))
+    application.add_handler(CommandHandler("blockchain", bot.blockchain_command))
+    application.add_handler(CommandHandler("stocks_basics", bot.stocks_command))
+    application.add_handler(CommandHandler("technical_analysis", bot.technical_analysis_command))
+    application.add_handler(CommandHandler("risk_management", bot.risk_management_command))
     
     # Handle all other messages
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, bot.handle_message))

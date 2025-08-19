@@ -4,17 +4,19 @@
     "overall_score": 0,
     "completed_modules": [],
     "current_modules": [
-      "crypto_basics"
+      "crypto_basics",
+      "stocks_basics"
     ],
     "quizzes_completed": 0,
     "correct_answers": 0,
     "total_questions": 0,
     "learning_streak": 1,
-    "last_activity": "2025-08-19T14:00:53.411561",
+    "last_activity": "2025-08-19T17:03:34.750566",
     "days_active": 1,
     "achievements": [],
     "recent_topics": [
-      "crypto_basics"
+      "crypto_basics",
+      "stocks_basics"
     ],
     "skill_levels": {
       "crypto": "beginner",
@@ -23,7 +25,7 @@
     },
     "learning_goals": [],
     "created_at": "2025-08-19T13:27:13.636492",
-    "updated_at": "2025-08-19T14:00:53.411566"
+    "updated_at": "2025-08-19T17:05:00.491855"
   },
   "6074998482": {
     "user_id": 6074998482,
@@ -34,7 +36,7 @@
     "correct_answers": 0,
     "total_questions": 0,
     "learning_streak": 1,
-    "last_activity": "2025-08-19T13:59:25.252452",
+    "last_activity": "2025-08-19T14:07:30.722578",
     "days_active": 1,
     "achievements": [],
     "recent_topics": [],
@@ -45,6 +47,6 @@
     },
     "learning_goals": [],
     "created_at": "2025-08-19T13:52:24.824795",
-    "updated_at": "2025-08-19T13:59:25.252459"
+    "updated_at": "2025-08-19T14:07:30.722587"
   }
 }
