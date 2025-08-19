@@ -74,7 +74,8 @@ Hey {user_info['display_name']}! I'm your friendly AI tutor powered by Gemini Pr
 Let's start your financial education journey! What would you like to learn about first?"""
         
         if update.message:
-            await update.message.reply_text(welcome_message, parse_mode=ParseMode.MARKDOWN)
+            clean_welcome = self._clean_markdown_response(welcome_message)
+            await update.message.reply_text(clean_welcome)
 
     async def help_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Help command handler"""
@@ -107,7 +108,8 @@ Let's start your financial education journey! What would you like to learn about
 💡 **Tip:** You can also just chat with me naturally! I'll remember our conversations and help you learn step by step.
         """
         
-        await update.message.reply_text(help_text, parse_mode=ParseMode.MARKDOWN)
+        clean_help = self._clean_markdown_response(help_text)
+        await update.message.reply_text(clean_help)
 
     async def learn_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Learning modules command"""
@@ -125,7 +127,8 @@ Let's start your financial education journey! What would you like to learn about
             message += f"   └ {module['description']}\n"
             message += f"   └ Use: /module_{module_id}\n\n"
         
-        await update.message.reply_text(message, parse_mode=ParseMode.MARKDOWN)
+        clean_message = self._clean_markdown_response(message)
+        await update.message.reply_text(clean_message)
 
     async def crypto_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Cryptocurrency learning command"""
@@ -136,7 +139,8 @@ Let's start your financial education journey! What would you like to learn about
         
         self.progress_tracker.update_progress(user_id, 'crypto_basics', 'started')
         
-        await update.message.reply_text(content, parse_mode=ParseMode.MARKDOWN)
+        clean_content = self._clean_markdown_response(content)
+        await update.message.reply_text(clean_content)
 
     async def stocks_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Stock trading learning command"""
@@ -147,7 +151,8 @@ Let's start your financial education journey! What would you like to learn about
         
         self.progress_tracker.update_progress(user_id, 'stocks_basics', 'started')
         
-        await update.message.reply_text(content, parse_mode=ParseMode.MARKDOWN)
+        clean_content = self._clean_markdown_response(content)
+        await update.message.reply_text(clean_content)
 
     async def progress_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Progress tracking command"""
@@ -175,7 +180,8 @@ Let's start your financial education journey! What would you like to learn about
             for achievement in progress['achievements']:
                 message += f"🏆 {achievement}\n"
         
-        await update.message.reply_text(message, parse_mode=ParseMode.MARKDOWN)
+        clean_message = self._clean_markdown_response(message)
+        await update.message.reply_text(clean_message)
 
     async def quiz_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Quiz command"""
@@ -191,7 +197,8 @@ Let's start your financial education journey! What would you like to learn about
         
         message += f"\n💡 Reply with the number of your answer!"
         
-        await update.message.reply_text(message, parse_mode=ParseMode.MARKDOWN)
+        clean_message = self._clean_markdown_response(message)
+        await update.message.reply_text(clean_message)
 
     async def reset_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Reset progress command"""
@@ -200,10 +207,8 @@ Let's start your financial education journey! What would you like to learn about
         user_id = update.effective_user.id
         self.progress_tracker.reset_user_progress(user_id)
         
-        await update.message.reply_text(
-            "🔄 **Progress Reset Complete!**\n\nYour learning progress has been reset. Ready to start fresh! Use /learn to begin again.",
-            parse_mode=ParseMode.MARKDOWN
-        )
+        reset_message = "Progress Reset Complete! Your learning progress has been reset. Ready to start fresh! Use /learn to begin again."
+        await update.message.reply_text(reset_message)
 
     async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle general messages with Gemini AI"""
