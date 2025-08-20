@@ -9,6 +9,7 @@ Bot display name: User prefers to be called "Extreme" rather than "bot_owner".
 Group chat behavior: Bot should only respond when tagged or when someone replies to its messages, not to every message.
 Friend recognition: Bot recognizes @Er_Stranger as "Neel", @Nexxxyzz as "Nex", @pr_amod18 as "Pramod".
 Group memory: Bot now remembers group conversations between friends and maintains context of shared discussions.
+Bot name: User wants bot to be named "Ayaka" and respond when called by that name in group chats.
 
 # System Architecture
 

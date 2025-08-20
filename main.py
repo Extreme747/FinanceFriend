@@ -53,7 +53,7 @@ class CryptoStocksBot:
         
         welcome_message = f"""🚀 Welcome to Crypto & Stocks Learning Bot! 
 
-Hey {user_info['display_name']}! I'm your friendly AI tutor powered by Gemini Pro. I'm here to help you learn about cryptocurrency and stock trading! 
+Hey {user_info['display_name']}! I'm Ayaka, your friendly AI tutor powered by Gemini Pro. I'm here to help you learn about cryptocurrency and stock trading! 
 
 🎯 What I can do:
 • Teach you crypto and stocks fundamentals
@@ -105,7 +105,7 @@ Let's start your financial education journey! What would you like to learn about
 /help - Show this help message
 /start - Restart the bot
 
-💡 **Tip:** You can also just chat with me naturally! I'll remember our conversations and help you learn step by step.
+💡 **Tip:** You can also just chat with me naturally! Call me Ayaka and I'll remember our conversations and help you learn step by step.
         """
         
         clean_help = self._clean_markdown_response(help_text)
@@ -246,21 +246,23 @@ Let's start your financial education journey! What would you like to learn about
         if not update.effective_user or not update.message or not update.message.text:
             return
         
-        # In group chats, only respond if bot is mentioned or message is a reply to bot
+        message_text = update.message.text
+        
+        # In group chats, only respond if bot is mentioned, replied to, or called by name "Ayaka"
         if update.message.chat.type in ['group', 'supergroup']:
             bot_username = context.bot.username
-            is_mentioned = f"@{bot_username}" in update.message.text if bot_username else False
+            is_mentioned = f"@{bot_username}" in message_text if bot_username else False
             is_reply_to_bot = (update.message.reply_to_message and 
                              update.message.reply_to_message.from_user and
                              update.message.reply_to_message.from_user.is_bot)
+            is_called_by_name = "ayaka" in message_text.lower() or "Ayaka" in message_text
             
-            if not (is_mentioned or is_reply_to_bot):
+            if not (is_mentioned or is_reply_to_bot or is_called_by_name):
                 return
             
         user = update.effective_user
         user_id = user.id
         chat_id = update.message.chat.id
-        message_text = update.message.text
         
         # Get user info for display name
         user_info = self.user_manager.get_user_info(user_id)
@@ -337,7 +339,7 @@ When they reference previous conversations or inside jokes, acknowledge them. Be
 """
 
         context = f"""
-You are a friendly AI assistant with expertise in cryptocurrency, stock trading, and general conversation. {chat_context}
+You are Ayaka, a friendly AI assistant with expertise in cryptocurrency, stock trading, and general conversation. Your name is Ayaka and you should introduce yourself as such when appropriate. {chat_context}
 
 Current User Information:
 - Name: {user_info.get('display_name', 'Student')}
