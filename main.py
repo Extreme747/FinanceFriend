@@ -259,22 +259,38 @@ Let's start your financial education journey! What would you like to learn about
             
         user = update.effective_user
         user_id = user.id
+        chat_id = update.message.chat.id
         message_text = update.message.text
         
-        # Store the conversation
+        # Get user info for display name
+        user_info = self.user_manager.get_user_info(user_id)
+        display_name = user_info.get('display_name', user.first_name or 'Unknown')
+        
+        # Store the conversation with chat context
         conversation_data = {
             'user_message': message_text,
+            'user_name': display_name,
             'timestamp': datetime.now().isoformat(),
-            'user_id': user_id
+            'user_id': user_id,
+            'chat_id': chat_id,
+            'chat_type': update.message.chat.type
         }
         
-        # Get user context and memories
-        user_info = self.user_manager.get_user_info(user_id)
-        user_memories = self.data_manager.get_user_memories(user_id)
+        # Get memories based on chat type
+        if update.message.chat.type in ['group', 'supergroup']:
+            # For group chats, get group conversation history
+            group_memories = self.data_manager.get_group_memories(chat_id)
+            user_memories = self.data_manager.get_user_memories(user_id)
+            # Combine both for context
+            all_memories = group_memories + user_memories[-5:]  # Include some user history too
+        else:
+            # For private chats, get individual user memories
+            all_memories = self.data_manager.get_user_memories(user_id)
+        
         user_progress = self.progress_tracker.get_user_progress(user_id)
         
-        # Create context for Gemini
-        context_prompt = self._build_context_prompt(user_info, user_memories, user_progress, message_text)
+        # Create context for Gemini with group context
+        context_prompt = self._build_context_prompt(user_info, all_memories, user_progress, message_text, update.message.chat.type)
         
         try:
             # Get AI response
@@ -282,7 +298,15 @@ Let's start your financial education journey! What would you like to learn about
             
             # Store the conversation with AI response
             conversation_data['ai_response'] = ai_response
-            self.data_manager.store_conversation(user_id, conversation_data)
+            
+            # Store conversation based on chat type
+            if update.message.chat.type in ['group', 'supergroup']:
+                # Store in both group and individual memories
+                self.data_manager.store_group_conversation(chat_id, conversation_data)
+                self.data_manager.store_conversation(user_id, conversation_data)
+            else:
+                # Store only in individual memories for private chats
+                self.data_manager.store_conversation(user_id, conversation_data)
             
             # Update user activity
             self.progress_tracker.update_user_activity(user_id, message_text)
@@ -298,32 +322,44 @@ Let's start your financial education journey! What would you like to learn about
                     "Sorry, I'm having trouble processing that right now. Please try again in a moment!"
                 )
 
-    def _build_context_prompt(self, user_info, user_memories, user_progress, current_message):
+    def _build_context_prompt(self, user_info, memories, user_progress, current_message, chat_type='private'):
         """Build context prompt for Gemini AI"""
-        context = f"""
-You are a supportive and friendly AI tutor specializing in cryptocurrency and stock trading education. 
+        chat_context = ""
+        if chat_type in ['group', 'supergroup']:
+            chat_context = """
+IMPORTANT: You are in a group chat with friends. Remember the context of group conversations between:
+- Extreme (bot owner/admin)
+- Neel (@Er_Stranger) 
+- Nex (@Nexxxyzz)
+- Pramod (@pr_amod18)
 
-User Information:
+When they reference previous conversations or inside jokes, acknowledge them. Be part of their friend group while maintaining your helpful nature.
+"""
+
+        context = f"""
+You are a friendly AI assistant with expertise in cryptocurrency, stock trading, and general conversation. {chat_context}
+
+Current User Information:
 - Name: {user_info.get('display_name', 'Student')}
 - Learning Progress: {user_progress.get('overall_score', 0)}% complete
 - Completed Modules: {len(user_progress.get('completed_modules', []))}
 - Recent Topics: {user_progress.get('recent_topics', [])}
 
-Conversation History (last 3 exchanges):
-{self._format_recent_memories(user_memories)}
+Recent Conversation History:
+{self._format_recent_memories(memories)}
 
 Current Message: {current_message}
 
 Guidelines:
-1. Be supportive, encouraging, and friendly
-2. Provide accurate, educational information about crypto and stocks
-3. Remember context from previous conversations
-4. Encourage learning and progress
-5. Use emojis and markdown formatting for engagement
-6. Keep responses informative but conversational
-7. Ask follow-up questions to encourage deeper learning
+1. For crypto/stocks topics: Provide accurate, educational information with safety-focused advice
+2. For general conversation: Be helpful, engaging, and supportive on any topic
+3. Remember context from previous conversations (both group and individual)
+4. Be encouraging and maintain a conversational, friendly tone
+5. You can discuss anything - from crypto and stocks to daily life, hobbies, technology, or any other topics
+6. In group chats, acknowledge the friend dynamics and shared conversations
+7. Always prioritize helpful, accurate responses
 
-Please respond to the user's message considering their learning progress and conversation history.
+Please respond considering the conversation history and context.
         """
         
         return context
@@ -333,12 +369,18 @@ Please respond to the user's message considering their learning progress and con
         if not memories:
             return "No previous conversations"
         
-        recent = memories[-3:] if len(memories) > 3 else memories
+        recent = memories[-5:] if len(memories) > 5 else memories
         formatted = []
         
         for memory in recent:
-            formatted.append(f"User: {memory.get('user_message', '')}")
-            formatted.append(f"Bot: {memory.get('ai_response', '')}")
+            user_name = memory.get('user_name', 'User')
+            user_message = memory.get('user_message', '')
+            ai_response = memory.get('ai_response', '')
+            
+            if user_message:
+                formatted.append(f"{user_name}: {user_message}")
+            if ai_response:
+                formatted.append(f"Bot: {ai_response}")
         
         return "\n".join(formatted)
     

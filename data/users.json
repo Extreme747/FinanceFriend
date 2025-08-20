@@ -5,10 +5,45 @@
     "first_name": "ΞЖТЯΞMΞ",
     "chat_id": -1002218070102,
     "registration_date": "2025-08-19T13:25:31.892261",
-    "last_seen": "2025-08-19T16:51:20.122376",
+    "last_seen": "2025-08-19T17:13:18.219734",
     "is_known_user": true,
     "role": "admin",
     "display_name": "Extreme",
     "known_as": "Extreme"
+  },
+  "6074998482": {
+    "user_id": 6074998482,
+    "username": "Er_Stranger",
+    "first_name": "Er",
+    "chat_id": 6074998482,
+    "registration_date": "2025-08-19T17:16:51.166010",
+    "last_seen": "2025-08-19T17:16:51.166015",
+    "is_known_user": true,
+    "role": "student",
+    "display_name": "Neel",
+    "known_as": "Neel"
+  },
+  "5511117293": {
+    "user_id": 5511117293,
+    "username": "",
+    "first_name": "Deep",
+    "chat_id": 5511117293,
+    "registration_date": "2025-08-19T17:18:40.977712",
+    "last_seen": "2025-08-19T17:18:40.977718",
+    "is_known_user": false,
+    "role": "user",
+    "display_name": "Deep"
+  },
+  "1603600113": {
+    "user_id": 1603600113,
+    "username": "pr_amod18",
+    "first_name": "Pramod",
+    "chat_id": 1603600113,
+    "registration_date": "2025-08-20T07:38:53.318360",
+    "last_seen": "2025-08-20T07:38:53.627386",
+    "is_known_user": true,
+    "role": "student",
+    "display_name": "Pramod",
+    "known_as": "Pramod"
   }
 }

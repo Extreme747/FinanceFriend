@@ -19,6 +19,7 @@ class DataManager:
         self.users_file = os.path.join(self.data_dir, 'users.json')
         self.memories_file = os.path.join(self.data_dir, 'memories.json')
         self.progress_file = os.path.join(self.data_dir, 'progress.json')
+        self.group_memories_file = os.path.join(self.data_dir, 'group_memories.json')
         
         # Initialize files if they don't exist
         self.initialize_data_files()
@@ -34,7 +35,8 @@ class DataManager:
         files_to_init = [
             (self.users_file, {}),
             (self.memories_file, {}),
-            (self.progress_file, {})
+            (self.progress_file, {}),
+            (self.group_memories_file, {})
         ]
         
         for file_path, default_data in files_to_init:
@@ -110,6 +112,37 @@ class DataManager:
         
         memories_data[str(user_id)] = user_memories
         self.save_memories_data(memories_data)
+    
+    def get_group_memories_data(self) -> Dict:
+        """Get all group memories data"""
+        return self.load_json_file(self.group_memories_file)
+    
+    def save_group_memories_data(self, data: Dict):
+        """Save group memories data"""
+        self.save_json_file(self.group_memories_file, data)
+    
+    def get_group_memories(self, chat_id: int) -> List[Dict]:
+        """Get conversation memories for a group chat"""
+        group_memories_data = self.get_group_memories_data()
+        return group_memories_data.get(str(chat_id), [])
+    
+    def store_group_conversation(self, chat_id: int, conversation_data: Dict):
+        """Store a group conversation in memories"""
+        group_memories_data = self.get_group_memories_data()
+        group_memories = group_memories_data.get(str(chat_id), [])
+        
+        # Add timestamp if not present
+        if 'timestamp' not in conversation_data:
+            conversation_data['timestamp'] = datetime.now().isoformat()
+        
+        group_memories.append(conversation_data)
+        
+        # Keep only last 100 group conversations to manage memory
+        if len(group_memories) > 100:
+            group_memories = group_memories[-100:]
+        
+        group_memories_data[str(chat_id)] = group_memories
+        self.save_group_memories_data(group_memories_data)
     
     def get_progress_data(self) -> Dict:
         """Get all progress data"""
