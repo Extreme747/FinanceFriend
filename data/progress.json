@@ -3,42 +3,12 @@
     "user_id": 5587821011,
     "overall_score": 0,
     "completed_modules": [],
-    "current_modules": [
-      "crypto_basics",
-      "stocks_basics",
-      "technical_analysis"
-    ],
-    "quizzes_completed": 0,
-    "correct_answers": 0,
-    "total_questions": 0,
-    "learning_streak": 2,
-    "last_activity": "2025-08-20T09:16:19.096495",
-    "days_active": 2,
-    "achievements": [],
-    "recent_topics": [
-      "crypto_basics",
-      "stocks_basics",
-      "technical_analysis"
-    ],
-    "skill_levels": {
-      "crypto": "beginner",
-      "stocks": "beginner",
-      "trading": "beginner"
-    },
-    "learning_goals": [],
-    "created_at": "2025-08-19T13:27:13.636492",
-    "updated_at": "2025-08-20T09:16:19.096500"
-  },
-  "6074998482": {
-    "user_id": 6074998482,
-    "overall_score": 0,
-    "completed_modules": [],
     "current_modules": [],
     "quizzes_completed": 0,
     "correct_answers": 0,
     "total_questions": 0,
-    "learning_streak": 2,
-    "last_activity": "2025-08-20T10:46:42.591672",
+    "learning_streak": 1,
+    "last_activity": "2025-09-11T11:53:39.408140",
     "days_active": 2,
     "achievements": [],
     "recent_topics": [],
@@ -48,8 +18,30 @@
       "trading": "beginner"
     },
     "learning_goals": [],
+    "created_at": "2025-08-29T14:14:28.623459",
+    "updated_at": "2025-09-11T11:53:39.408144"
+  },
+  "6074998482": {
+    "user_id": 6074998482,
+    "overall_score": 0,
+    "completed_modules": [],
+    "current_modules": [],
+    "quizzes_completed": 0,
+    "correct_answers": 0,
+    "total_questions": 0,
+    "learning_streak": 1,
+    "last_activity": "2025-09-11T11:52:51.988992",
+    "days_active": 8,
+    "achievements": [],
+    "recent_topics": [],
+    "skill_levels": {
+      "crypto": "beginner",
+      "stocks": "beginner",
+      "trading": "beginner"
+    },
+    "learning_goals": [],
     "created_at": "2025-08-19T13:52:24.824795",
-    "updated_at": "2025-08-20T10:46:42.591677"
+    "updated_at": "2025-09-11T11:52:51.988999"
   },
   "5511117293": {
     "user_id": 5511117293,
@@ -81,28 +73,66 @@
     "user_id": 1603600113,
     "overall_score": 0,
     "completed_modules": [],
-    "current_modules": [
-      "crypto_basics",
-      "stocks_basics"
-    ],
+    "current_modules": [],
     "quizzes_completed": 0,
     "correct_answers": 0,
     "total_questions": 0,
-    "learning_streak": 0,
-    "last_activity": null,
-    "days_active": 0,
+    "learning_streak": 1,
+    "last_activity": "2025-08-29T14:24:46.241463",
+    "days_active": 1,
     "achievements": [],
-    "recent_topics": [
-      "crypto_basics",
-      "stocks_basics"
-    ],
+    "recent_topics": [],
     "skill_levels": {
       "crypto": "beginner",
       "stocks": "beginner",
       "trading": "beginner"
     },
     "learning_goals": [],
-    "created_at": "2025-08-20T07:39:52.928832",
-    "updated_at": "2025-08-20T07:40:13.867335"
+    "created_at": "2025-08-29T14:14:45.021126",
+    "updated_at": "2025-08-29T14:24:46.241469"
+  },
+  "7297313127": {
+    "user_id": 7297313127,
+    "overall_score": 0,
+    "completed_modules": [],
+    "current_modules": [],
+    "quizzes_completed": 0,
+    "correct_answers": 0,
+    "total_questions": 0,
+    "learning_streak": 2,
+    "last_activity": "2025-08-26T15:39:36.033369",
+    "days_active": 5,
+    "achievements": [],
+    "recent_topics": [],
+    "skill_levels": {
+      "crypto": "beginner",
+      "stocks": "beginner",
+      "trading": "beginner"
+    },
+    "learning_goals": [],
+    "created_at": "2025-08-20T15:10:41.374116",
+    "updated_at": "2025-08-26T15:39:36.033374"
+  },
+  "6436426732": {
+    "user_id": 6436426732,
+    "overall_score": 0,
+    "completed_modules": [],
+    "current_modules": [],
+    "quizzes_completed": 0,
+    "correct_answers": 0,
+    "total_questions": 0,
+    "learning_streak": 1,
+    "last_activity": "2025-08-20T15:10:48.591766",
+    "days_active": 1,
+    "achievements": [],
+    "recent_topics": [],
+    "skill_levels": {
+      "crypto": "beginner",
+      "stocks": "beginner",
+      "trading": "beginner"
+    },
+    "learning_goals": [],
+    "created_at": "2025-08-20T15:10:45.123653",
+    "updated_at": "2025-08-20T15:10:48.591772"
   }
 }
