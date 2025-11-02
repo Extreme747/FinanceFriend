@@ -32,14 +32,14 @@ class BotConfig:
     TRIBUTE_MESSAGE = """🙏 Daily Tribute to Pramod 🙏
 
 Bro, hope you're recovering well! 💪
-Your friends Extreme, Neel, and Nex are thinking about you.
+Missing you every day!
 
 Get well soon and come back strong! 🔥
 We're all waiting for your comeback! 
 
 Stay strong, Pramod! 💙
 
-- Ayaka & the squad"""
+- From Neel, Nex, and Extreme"""
     
     # Educational topics
     LEARNING_TOPICS = [

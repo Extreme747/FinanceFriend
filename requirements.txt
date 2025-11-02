@@ -2,6 +2,7 @@ about-time==4.2.1
 alive-progress==3.3.0
 annotated-types==0.7.0
 anyio==4.10.0
+APScheduler==3.11.1
 cachetools==5.5.2
 certifi==2025.8.3
 charset-normalizer==3.4.3
@@ -50,6 +51,7 @@ types-requests==2.32.4.20250809
 typing-inspection==0.4.1
 typing_extensions==4.14.1
 tzdata==2025.2
+tzlocal==5.3.1
 uritemplate==4.2.0
 urllib3==2.5.0
 websockets==15.0.1
