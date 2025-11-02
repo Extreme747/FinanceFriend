@@ -10,7 +10,7 @@ import asyncio
 from datetime import datetime
 from telegram import Update, BotCommand
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
-from telegram.constants import ParseMode
+from telegram.constants import ParseMode, ChatAction
 
 from bot_config import BotConfig
 from gemini_client import GeminiClient
@@ -319,6 +319,9 @@ Let's start your financial education journey! What would you like to learn about
                                                     update.message.chat.type)
 
         try:
+            # Show typing indicator while generating response
+            await context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
+            
             # Get AI response
             ai_response = await self.gemini.get_educational_response(
                 context_prompt)
