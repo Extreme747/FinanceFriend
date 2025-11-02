@@ -17,13 +17,29 @@ class BotConfig:
         },
         '@pr_amod18': {
             'name': 'Pramod',
-            'role': 'student'
+            'role': 'student',
+            'username': 'pr_amod18'
         },
         '@Extreme747': {
             'name': 'Extreme',
             'role': 'admin'
         }
     }
+    
+    # Tribute settings
+    PRAMOD_USERNAME = 'pr_amod18'
+    TRIBUTE_HOUR = 12  # Send tribute at 12 PM daily
+    TRIBUTE_MESSAGE = """🙏 Daily Tribute to Pramod 🙏
+
+Bro, hope you're recovering well! 💪
+Your friends Extreme, Neel, and Nex are thinking about you.
+
+Get well soon and come back strong! 🔥
+We're all waiting for your comeback! 
+
+Stay strong, Pramod! 💙
+
+- Ayaka & the squad"""
     
     # Educational topics
     LEARNING_TOPICS = [

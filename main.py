@@ -7,7 +7,7 @@ Features: Persistent memory, progress tracking, educational content
 import logging
 import os
 import asyncio
-from datetime import datetime
+from datetime import datetime, time, timedelta
 from telegram import Update, BotCommand
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 from telegram.constants import ParseMode, ChatAction
@@ -35,6 +35,8 @@ class CryptoStocksBot:
         self.educational_content = EducationalContent()
         self.user_manager = UserManager(self.data_manager)
         self.progress_tracker = ProgressTracker(self.data_manager)
+        self.tribute_task = None
+        self.tribute_enabled = True  # Auto-start tribute
 
     async def start(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Start command handler"""
@@ -445,6 +447,47 @@ Please respond considering the conversation history and context.
 
         return cleaned
 
+    async def send_daily_tribute(self, context: ContextTypes.DEFAULT_TYPE):
+        """Send daily tribute message to Pramod"""
+        try:
+            if not self.tribute_enabled:
+                return
+            
+            # Send tribute via username
+            await context.bot.send_message(
+                chat_id=f"@{self.config.PRAMOD_USERNAME}",
+                text=self.config.TRIBUTE_MESSAGE
+            )
+            logger.info(f"Daily tribute sent to @{self.config.PRAMOD_USERNAME}")
+        except Exception as e:
+            logger.error(f"Error sending daily tribute: {e}")
+    
+    async def stop_tribute_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Stop daily tribute messages (admin only)"""
+        if not update.effective_user or not update.message:
+            return
+        
+        username = update.effective_user.username
+        if not self.config.is_admin(username):
+            await update.message.reply_text("Only admins can stop the tribute.")
+            return
+        
+        self.tribute_enabled = False
+        await update.message.reply_text("Daily tribute to Pramod has been stopped. Use /start_tribute to resume.")
+    
+    async def start_tribute_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Start daily tribute messages (admin only)"""
+        if not update.effective_user or not update.message:
+            return
+        
+        username = update.effective_user.username
+        if not self.config.is_admin(username):
+            await update.message.reply_text("Only admins can start the tribute.")
+            return
+        
+        self.tribute_enabled = True
+        await update.message.reply_text("Daily tribute to Pramod has been resumed!")
+
     async def error_handler(self, update: object,
                             context: ContextTypes.DEFAULT_TYPE):
         """Error handler"""
@@ -501,6 +544,10 @@ def main():
         CommandHandler("technical_analysis", bot.technical_analysis_command))
     application.add_handler(
         CommandHandler("risk_management", bot.risk_management_command))
+    
+    # Tribute control commands (admin only)
+    application.add_handler(CommandHandler("stop_tribute", bot.stop_tribute_command))
+    application.add_handler(CommandHandler("start_tribute", bot.start_tribute_command))
 
     # Handle all other messages
     application.add_handler(
@@ -509,9 +556,19 @@ def main():
     # Error handler
     application.add_error_handler(bot.error_handler)
 
-    # Setup commands menu
+    # Setup commands menu and daily jobs
     async def post_init(app):
         await bot.setup_bot_commands(app)
+        
+        # Schedule daily tribute at 12 PM
+        job_queue = app.job_queue
+        tribute_time = time(hour=12, minute=0)  # 12:00 PM
+        job_queue.run_daily(
+            bot.send_daily_tribute,
+            time=tribute_time,
+            name="daily_pramod_tribute"
+        )
+        logger.info(f"Daily tribute scheduled for {tribute_time} to @{bot.config.PRAMOD_USERNAME}")
 
     application.post_init = post_init
 
