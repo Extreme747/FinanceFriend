@@ -595,7 +595,7 @@ def main():
     application.add_handler(CommandHandler("start_tribute", bot.start_tribute_command))
     
     # Video extraction command
-    application.add_handler(CommandHandler("getvideo", bot.getvideo_command, pass_args=True))
+    application.add_handler(CommandHandler("getvideo", bot.getvideo_command))
 
     # Handle all other messages
     application.add_handler(
