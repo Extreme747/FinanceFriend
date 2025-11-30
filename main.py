@@ -18,6 +18,7 @@ from data_manager import DataManager
 from educational_content import EducationalContent
 from user_manager import UserManager
 from progress_tracker import ProgressTracker
+from video_extractor import VideoExtractor
 
 # Configure logging
 logging.basicConfig(
@@ -35,6 +36,7 @@ class CryptoStocksBot:
         self.educational_content = EducationalContent()
         self.user_manager = UserManager(self.data_manager)
         self.progress_tracker = ProgressTracker(self.data_manager)
+        self.video_extractor = VideoExtractor()
         self.tribute_task = None
         self.tribute_enabled = True  # Auto-start tribute
 
@@ -487,6 +489,49 @@ Please respond considering the conversation history and context.
         
         self.tribute_enabled = True
         await update.message.reply_text("Daily tribute to Pramod has been resumed!")
+    
+    async def getvideo_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Extract video from Instagram or X post"""
+        if not update.message or not context.args:
+            await update.message.reply_text(
+                "📹 Use: /getvideo <link>\n\n"
+                "Supported:\n"
+                "• Instagram posts\n"
+                "• X/Twitter posts\n\n"
+                "Example: /getvideo https://instagram.com/p/ABC123/"
+            )
+            return
+        
+        url = ' '.join(context.args)
+        
+        # Show processing message
+        processing_msg = await update.message.reply_text("🔄 Extracting video... Please wait")
+        
+        try:
+            result = await self.video_extractor.extract_video(url)
+            
+            if result['success']:
+                video_path = result['video_path']
+                title = result.get('title', 'Video')
+                
+                # Send video
+                with open(video_path, 'rb') as video:
+                    await update.message.reply_video(
+                        video=video,
+                        caption=f"✅ {title[:100]}"
+                    )
+                
+                # Cleanup
+                import os
+                os.remove(video_path)
+                await processing_msg.delete()
+                
+            else:
+                await processing_msg.edit_text(result['error'])
+                
+        except Exception as e:
+            logger.error(f"Error in getvideo: {e}")
+            await processing_msg.edit_text(f"❌ Error: {str(e)[:100]}")
 
     async def error_handler(self, update: object,
                             context: ContextTypes.DEFAULT_TYPE):
@@ -548,6 +593,9 @@ def main():
     # Tribute control commands (admin only)
     application.add_handler(CommandHandler("stop_tribute", bot.stop_tribute_command))
     application.add_handler(CommandHandler("start_tribute", bot.start_tribute_command))
+    
+    # Video extraction command
+    application.add_handler(CommandHandler("getvideo", bot.getvideo_command, pass_args=True))
 
     # Handle all other messages
     application.add_handler(
