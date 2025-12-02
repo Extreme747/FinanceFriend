@@ -21,9 +21,14 @@ class PenaltyManager:
     SKIP_THRESHOLD = 2  # Days to skip before donation
     ADMIN_EMAIL = 'theshul747@gmail.com'
     PENALTY_STICKER_ID = 'CAACAgUAAxkBAAEP7BhpLpgG4ODPU-ZAbhjlMkMIebGI_wACyh0AAu7FWFUq0EzTLCmrwzYE'
+    TEAM_LEADER_ID = 5587821011  # Only Extreme (team leader) can use penalty system
     
     def __init__(self):
         self._load_penalties()
+    
+    def is_authorized(self, user_id: int) -> bool:
+        """Check if user is team leader"""
+        return user_id == self.TEAM_LEADER_ID
     
     def _load_penalties(self):
         """Load penalties from file"""

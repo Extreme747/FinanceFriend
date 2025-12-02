@@ -671,6 +671,12 @@ Please respond considering the conversation history and context.
         """Check penalty status (for Neel)"""
         if not update.message or not update.effective_user:
             return
+        
+        # Check authorization
+        if not self.penalty_manager.is_authorized(update.effective_user.id):
+            await update.message.reply_text("❌ Only team leader (Extreme) can use penalty commands! 🔒")
+            return
+        
         username = update.effective_user.username
         if not username:
             username = update.effective_user.first_name or "User"
@@ -682,6 +688,12 @@ Please respond considering the conversation history and context.
         """Record missed daily progress"""
         if not update.message or not update.effective_user:
             return
+        
+        # Check authorization
+        if not self.penalty_manager.is_authorized(update.effective_user.id):
+            await update.message.reply_text("❌ Only team leader (Extreme) can use penalty commands! 🔒")
+            return
+        
         username = f"@{update.effective_user.username or 'unknown'}"
         
         result = self.penalty_manager.record_missed_progress(username)
@@ -696,6 +708,12 @@ Please respond considering the conversation history and context.
         """Mark progress as done"""
         if not update.message or not update.effective_user:
             return
+        
+        # Check authorization
+        if not self.penalty_manager.is_authorized(update.effective_user.id):
+            await update.message.reply_text("❌ Only team leader (Extreme) can use penalty commands! 🔒")
+            return
+        
         username = f"@{update.effective_user.username or 'unknown'}"
         
         result = self.penalty_manager.mark_progress_done(username)
@@ -703,7 +721,15 @@ Please respond considering the conversation history and context.
 
     async def penalty_pay_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Pay penalty amount"""
-        if not update.message or not context.args or not update.effective_user:
+        if not update.message or not update.effective_user:
+            return
+        
+        # Check authorization
+        if not self.penalty_manager.is_authorized(update.effective_user.id):
+            await update.message.reply_text("❌ Only team leader (Extreme) can use penalty commands! 🔒")
+            return
+        
+        if not context.args:
             await update.message.reply_text("Usage: /penalty_pay 100 (amount in ₹)")
             return
         
@@ -717,7 +743,15 @@ Please respond considering the conversation history and context.
 
     async def penalty_exception_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Request exception for missed progress"""
-        if not update.message or not context.args or not update.effective_user:
+        if not update.message or not update.effective_user:
+            return
+        
+        # Check authorization
+        if not self.penalty_manager.is_authorized(update.effective_user.id):
+            await update.message.reply_text("❌ Only team leader (Extreme) can use penalty commands! 🔒")
+            return
+        
+        if not context.args:
             await update.message.reply_text("Usage: /penalty_exception <reason>")
             return
         
@@ -728,8 +762,14 @@ Please respond considering the conversation history and context.
 
     async def penalty_tips_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Get tips to recover from penalties"""
-        if not update.message:
+        if not update.message or not update.effective_user:
             return
+        
+        # Check authorization
+        if not self.penalty_manager.is_authorized(update.effective_user.id):
+            await update.message.reply_text("❌ Only team leader (Extreme) can use penalty commands! 🔒")
+            return
+        
         tips = self.penalty_manager.get_recovery_tips()
         await update.message.reply_text(tips)
 

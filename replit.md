@@ -13,6 +13,8 @@ Bot name: "Ayaka" - responds when called by this name in group chats.
 Typing indicator: Bot shows "typing" animation when generating responses (for better UX).
 Daily tributes: Bot sends daily tribute message to Pramod at 12 PM (auto-enabled).
 Video extraction: Bot can extract and send videos from Instagram and X (Twitter) posts.
+Team management: User is team leader (ID: 5587821011) - manages startup task accountability via penalty system.
+Penalty system: Restricted to team leader only - tracks daily progress for Neel with ₹100 penalties, 28% interest, and auto-donation after >2 skips.
 
 # System Architecture
 
@@ -54,6 +56,15 @@ Video extraction: Bot can extract and send videos from Instagram and X (Twitter)
   - X/Twitter posts
   - Uses yt-dlp for reliable extraction
   - Handles file size limits (Telegram's 50MB max)
+- **Penalty System** (Team Leader Only): Comprehensive task accountability for startup:
+  - `/penalty_status` - Check penalty balance and history
+  - `/penalty_miss` - Record missed daily progress (sends penalty sticker)
+  - `/penalty_done` - Mark progress as completed
+  - `/penalty_pay <amount>` - Pay penalty amount
+  - `/penalty_exception <reason>` - Request exception (emails theshul747@gmail.com)
+  - `/penalty_tips` - Get recovery tips
+  - Rules: ₹100 per miss, 28% late interest, auto-donation after >2 consecutive skips without payment
+  - Authorization: Team leader ID (5587821011) only
 
 ## Configuration Management
 - **Centralized Config**: Bot configuration class containing user definitions, tribute settings, learning topics
@@ -119,12 +130,19 @@ python main.py
 ├── bot_config.py           - Configuration, user definitions, tribute settings
 ├── gemini_client.py        - AI integration with Gemini 2.5 Flash
 ├── data_manager.py         - JSON file persistence management
-├── video_extractor.py      - Instagram/X video extraction (NEW)
+├── video_extractor.py      - Instagram/X video extraction
+├── penalty_system.py       - Penalty tracking for team accountability (NEW)
 ├── educational_content.py  - Learning module content
 ├── user_manager.py         - User registration and tracking
 ├── progress_tracker.py     - Learning progress management
+├── utilities.py            - Utility features (price tracking, news, etc.)
 ├── requirements.txt        - All Python dependencies
 ├── data/                   - JSON data storage directory
+│   ├── users.json
+│   ├── progress.json
+│   ├── memories.json
+│   ├── group_memories.json
+│   └── penalties.json      - Penalty records (NEW)
 └── videos/                 - Temporary video storage (auto-cleaned)
 ```
 
@@ -140,10 +158,33 @@ python main.py
 - `/progress` - Check learning progress
 - `/reset` - Reset progress
 
-**New Commands:**
+**Utility Commands:**
+- `/price` - Get crypto/stock prices
+- `/news` - Daily news digest
+- `/reminder` - Set reminders
+- `/watchlist` - Manage watchlist
+- `/leaderboard` - View rankings
+- `/quote` - Motivational quotes
+- `/tips` - Trading tips
+- `/stats` - Group statistics
+- `/gif` - Share GIFs
+- `/convert` - Currency conversion
+- `/translate` - Translate text
+- `/todo` - Task management
+- `/trivia` - Crypto trivia game
+
+**Tribute & Media:**
 - `/getvideo <link>` - Extract video from Instagram/X post
 - `/start_tribute` - Start daily tribute (admin only)
 - `/stop_tribute` - Stop daily tribute (admin only)
+
+**Penalty System (Team Leader Only - ID: 5587821011):**
+- `/penalty_status` - Check penalty balance
+- `/penalty_miss` - Record missed progress (sends sticker)
+- `/penalty_done` - Mark progress completed
+- `/penalty_pay <amount>` - Pay penalty amount
+- `/penalty_exception <reason>` - Request exception (emails admin)
+- `/penalty_tips` - Get recovery tips
 
 **Interactive:**
 - Chat naturally and Ayaka will respond with context awareness
