@@ -19,6 +19,11 @@ from educational_content import EducationalContent
 from user_manager import UserManager
 from progress_tracker import ProgressTracker
 from video_extractor import VideoExtractor
+from utilities import (
+    PriceTracker, NewsDigest, ReminderManager, PollManager,
+    Watchlist, MotivationalContent, Leaderboard, GroupStats,
+    GifManager, CurrencyConverter, TranslationHelper, TodoManager, Trivia
+)
 
 # Configure logging
 logging.basicConfig(
@@ -533,6 +538,133 @@ Please respond considering the conversation history and context.
             logger.error(f"Error in getvideo: {e}")
             await processing_msg.edit_text(f"❌ Error: {str(e)[:100]}")
 
+    async def price_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Get crypto price"""
+        if not update.message or not context.args:
+            await update.message.reply_text("Usage: /price BTC")
+            return
+        symbol = context.args[0]
+        price_info = await PriceTracker.get_crypto_price(symbol)
+        await update.message.reply_text(price_info)
+
+    async def news_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Daily news digest"""
+        if not update.message:
+            return
+        news = await NewsDigest.get_crypto_news()
+        await update.message.reply_text(news)
+
+    async def reminder_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Set a reminder"""
+        if not update.effective_user or not update.message or not context.args:
+            await update.message.reply_text("Usage: /reminder 5 <message>")
+            return
+        try:
+            mins = int(context.args[0])
+            text = " ".join(context.args[1:]) if len(context.args) > 1 else "Reminder!"
+            result = ReminderManager.add_reminder(update.effective_user.id, text, mins)
+            await update.message.reply_text(result)
+        except:
+            await update.message.reply_text("Usage: /reminder 5 <message>")
+
+    async def watchlist_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Manage watchlist"""
+        if not update.effective_user or not update.message:
+            return
+        user_id = update.effective_user.id
+        if not context.args:
+            result = Watchlist.get_watchlist(user_id)
+        elif context.args[0] == 'add' and len(context.args) > 1:
+            result = Watchlist.add_to_watchlist(user_id, context.args[1])
+        elif context.args[0] == 'remove' and len(context.args) > 1:
+            result = Watchlist.remove_from_watchlist(user_id, context.args[1])
+        else:
+            result = "Usage: /watchlist or /watchlist add BTC or /watchlist remove BTC"
+        await update.message.reply_text(result)
+
+    async def leaderboard_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Show leaderboard"""
+        if not update.message:
+            return
+        result = Leaderboard.get_leaderboard()
+        await update.message.reply_text(result)
+
+    async def quote_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Get motivational quote"""
+        if not update.message:
+            return
+        result = MotivationalContent.get_daily_quote()
+        await update.message.reply_text(result)
+
+    async def tips_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Get trading tips"""
+        if not update.message:
+            return
+        result = MotivationalContent.get_trading_tip()
+        await update.message.reply_text(result)
+
+    async def stats_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Show group stats"""
+        if not update.message:
+            return
+        result = GroupStats.get_stats()
+        await update.message.reply_text(result)
+
+    async def gif_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Share a GIF"""
+        if not update.message:
+            return
+        result = GifManager.get_gif_emoji()
+        await update.message.reply_text(result)
+
+    async def convert_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Convert currency"""
+        if not update.message or len(context.args) < 3:
+            await update.message.reply_text("Usage: /convert 100 USD INR")
+            return
+        try:
+            amount = float(context.args[0])
+            result = CurrencyConverter.convert(amount, context.args[1], context.args[2])
+            await update.message.reply_text(result)
+        except:
+            await update.message.reply_text("Usage: /convert 100 USD INR")
+
+    async def translate_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Translate text"""
+        if not update.message or not context.args:
+            await update.message.reply_text("Usage: /translate hello")
+            return
+        text = " ".join(context.args)
+        result = TranslationHelper.translate(text, 'hindi')
+        await update.message.reply_text(result)
+
+    async def todo_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Manage todos"""
+        if not update.effective_user or not update.message:
+            return
+        user_id = update.effective_user.id
+        if not context.args:
+            result = TodoManager.get_todos(user_id)
+        elif context.args[0] == 'add' and len(context.args) > 1:
+            task = " ".join(context.args[1:])
+            result = TodoManager.add_todo(user_id, task)
+        elif context.args[0] == 'done' and len(context.args) > 1:
+            try:
+                task_num = int(context.args[1])
+                result = TodoManager.complete_todo(user_id, task_num)
+            except:
+                result = "Usage: /todo done 1"
+        else:
+            result = "Usage: /todo or /todo add <task> or /todo done 1"
+        await update.message.reply_text(result)
+
+    async def trivia_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Play crypto trivia"""
+        if not update.message:
+            return
+        question, answer = Trivia.get_trivia_question()
+        await update.message.reply_text(question)
+
     async def error_handler(self, update: object,
                             context: ContextTypes.DEFAULT_TYPE):
         """Error handler"""
@@ -549,6 +681,20 @@ Please respond considering the conversation history and context.
             BotCommand("progress", "Check your progress"),
             BotCommand("quiz", "Take a knowledge quiz"),
             BotCommand("reset", "Reset your progress"),
+            BotCommand("price", "Get crypto price"),
+            BotCommand("news", "Get daily news digest"),
+            BotCommand("reminder", "Set a reminder"),
+            BotCommand("watchlist", "Manage watchlist"),
+            BotCommand("leaderboard", "View leaderboard"),
+            BotCommand("quote", "Get motivational quote"),
+            BotCommand("tips", "Get trading tips"),
+            BotCommand("stats", "View group stats"),
+            BotCommand("gif", "Share a GIF"),
+            BotCommand("convert", "Convert currency"),
+            BotCommand("translate", "Translate text"),
+            BotCommand("todo", "Manage todos"),
+            BotCommand("trivia", "Play crypto trivia"),
+            BotCommand("getvideo", "Extract video from Instagram/X"),
         ]
 
         await application.bot.set_my_commands(commands)
@@ -596,6 +742,21 @@ def main():
     
     # Video extraction command
     application.add_handler(CommandHandler("getvideo", bot.getvideo_command))
+    
+    # New utility commands
+    application.add_handler(CommandHandler("price", bot.price_command))
+    application.add_handler(CommandHandler("news", bot.news_command))
+    application.add_handler(CommandHandler("reminder", bot.reminder_command))
+    application.add_handler(CommandHandler("watchlist", bot.watchlist_command))
+    application.add_handler(CommandHandler("leaderboard", bot.leaderboard_command))
+    application.add_handler(CommandHandler("quote", bot.quote_command))
+    application.add_handler(CommandHandler("tips", bot.tips_command))
+    application.add_handler(CommandHandler("stats", bot.stats_command))
+    application.add_handler(CommandHandler("gif", bot.gif_command))
+    application.add_handler(CommandHandler("convert", bot.convert_command))
+    application.add_handler(CommandHandler("translate", bot.translate_command))
+    application.add_handler(CommandHandler("todo", bot.todo_command))
+    application.add_handler(CommandHandler("trivia", bot.trivia_command))
 
     # Handle all other messages
     application.add_handler(
