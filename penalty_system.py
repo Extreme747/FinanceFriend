@@ -20,6 +20,7 @@ class PenaltyManager:
     INTEREST_RATE = 0.28  # 28%
     SKIP_THRESHOLD = 2  # Days to skip before donation
     ADMIN_EMAIL = 'theshul747@gmail.com'
+    PENALTY_STICKER_ID = 'CAACAgUAAxkBAAEP7BhpLpgG4ODPU-ZAbhjlMkMIebGI_wACyh0AAu7FWFUq0EzTLCmrwzYE'
     
     def __init__(self):
         self._load_penalties()
@@ -83,7 +84,8 @@ class PenaltyManager:
         return {
             'success': True,
             'message': f"❌ ₹{self.PENALTY_AMOUNT} penalty added!\nTotal penalty: ₹{user_data['total_penalty']}",
-            'consecutive_skips': user_data['consecutive_skips']
+            'consecutive_skips': user_data['consecutive_skips'],
+            'sticker_id': self.PENALTY_STICKER_ID
         }
     
     def add_exception(self, username: str, reason: str, email_notification: bool = True) -> Dict:

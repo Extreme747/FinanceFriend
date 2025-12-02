@@ -685,6 +685,11 @@ Please respond considering the conversation history and context.
         username = f"@{update.effective_user.username or 'unknown'}"
         
         result = self.penalty_manager.record_missed_progress(username)
+        
+        # Send penalty sticker
+        if result['success'] and 'sticker_id' in result:
+            await update.message.reply_sticker(sticker=result['sticker_id'])
+        
         await update.message.reply_text(result['message'])
 
     async def penalty_done_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
