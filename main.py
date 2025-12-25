@@ -676,7 +676,11 @@ Please respond considering the conversation history and context.
             return
         
         res = self.penalty_manager.start_penalty()
-        await update.message.reply_sticker(sticker=res['sticker'])
+        try:
+            await update.message.reply_sticker(sticker=res['sticker'])
+        except Exception as e:
+            logger.error(f"Error sending sticker: {e}")
+            
         await update.message.reply_text(f"💀 PENALTY STARTED! 💀\n\nTarget: @Er_Stranger (Neel)\nAmount: ₹{res['amount']}\nTime: {res['time']}\n\nAyaka is watching! 24 ghante me kaam khatam karo varna 18% interest lagega! 🤣🔥")
 
     async def penalty_done_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -720,8 +724,8 @@ Please respond considering the conversation history and context.
             BotCommand("todo", "Manage todos"),
             BotCommand("trivia", "Play crypto trivia"),
             BotCommand("getvideo", "Extract video from Instagram/X"),
-            BotCommand("Penalty_initial", "Dhamki + 100rs penalty for Neel"),
-            BotCommand("Penalty_done", "Stop penalty & check 18% interest"),
+            BotCommand("penalty_initial", "Dhamki + 100rs penalty for Neel"),
+            BotCommand("penalty_done", "Stop penalty & check 18% interest"),
         ]
 
         await application.bot.set_my_commands(commands)
@@ -786,8 +790,8 @@ def main():
     application.add_handler(CommandHandler("trivia", bot.trivia_command))
     
     # Penalty system commands (Simplified)
-    application.add_handler(CommandHandler("Penalty_initial", bot.penalty_initial_command))
-    application.add_handler(CommandHandler("Penalty_done", bot.penalty_done_command))
+    application.add_handler(CommandHandler("penalty_initial", bot.penalty_initial_command))
+    application.add_handler(CommandHandler("penalty_done", bot.penalty_done_command))
 
     # Handle all other messages
     application.add_handler(
