@@ -24,7 +24,7 @@ from utilities import (
     Watchlist, MotivationalContent, Leaderboard, GroupStats,
     GifManager, CurrencyConverter, TranslationHelper, TodoManager, Trivia
 )
-from penalty_system import PenaltyManager, PenaltyNotifier
+from penalty_system import PenaltyManager
 
 # Configure logging
 logging.basicConfig(
