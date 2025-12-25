@@ -667,111 +667,28 @@ Please respond considering the conversation history and context.
         question, answer = Trivia.get_trivia_question()
         await update.message.reply_text(question)
 
-    async def penalty_status_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Check penalty status (for Neel)"""
+    async def penalty_initial_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Start 100rs penalty for Neel"""
         if not update.message or not update.effective_user:
             return
-        
-        # Check authorization
         if not self.penalty_manager.is_authorized(update.effective_user.id):
-            await update.message.reply_text("❌ Only team leader (Extreme) can use penalty commands! 🔒")
+            await update.message.reply_text("❌ Sirf Team Leader (Extreme) dhamki de sakta hai! 🔒")
             return
         
-        username = update.effective_user.username
-        if not username:
-            username = update.effective_user.first_name or "User"
-        
-        status = self.penalty_manager.get_status(f"@{username}")
-        await update.message.reply_text(status)
-
-    async def penalty_miss_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Record missed daily progress"""
-        if not update.message or not update.effective_user:
-            return
-        
-        # Check authorization
-        if not self.penalty_manager.is_authorized(update.effective_user.id):
-            await update.message.reply_text("❌ Only team leader (Extreme) can use penalty commands! 🔒")
-            return
-        
-        username = f"@{update.effective_user.username or 'unknown'}"
-        
-        result = self.penalty_manager.record_missed_progress(username)
-        
-        # Send penalty sticker
-        if result['success'] and 'sticker_id' in result:
-            await update.message.reply_sticker(sticker=result['sticker_id'])
-        
-        await update.message.reply_text(result['message'])
+        res = self.penalty_manager.start_penalty()
+        await update.message.reply_sticker(sticker=res['sticker'])
+        await update.message.reply_text(f"💀 PENALTY STARTED! 💀\n\nTarget: @Er_Stranger (Neel)\nAmount: ₹{res['amount']}\nTime: {res['time']}\n\nAyaka is watching! 24 ghante me kaam khatam karo varna 18% interest lagega! 🤣🔥")
 
     async def penalty_done_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Mark progress as done"""
+        """Complete penalty"""
         if not update.message or not update.effective_user:
             return
-        
-        # Check authorization
         if not self.penalty_manager.is_authorized(update.effective_user.id):
-            await update.message.reply_text("❌ Only team leader (Extreme) can use penalty commands! 🔒")
+            await update.message.reply_text("❌ Sirf Team Leader check kar sakta hai! 🔒")
             return
         
-        username = f"@{update.effective_user.username or 'unknown'}"
-        
-        result = self.penalty_manager.mark_progress_done(username)
-        await update.message.reply_text(result['message'])
-
-    async def penalty_pay_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Pay penalty amount"""
-        if not update.message or not update.effective_user:
-            return
-        
-        # Check authorization
-        if not self.penalty_manager.is_authorized(update.effective_user.id):
-            await update.message.reply_text("❌ Only team leader (Extreme) can use penalty commands! 🔒")
-            return
-        
-        if not context.args:
-            await update.message.reply_text("Usage: /penalty_pay 100 (amount in ₹)")
-            return
-        
-        try:
-            amount = float(context.args[0])
-            username = f"@{update.effective_user.username or 'unknown'}"
-            result = self.penalty_manager.pay_penalty(username, amount)
-            await update.message.reply_text(result['message'])
-        except:
-            await update.message.reply_text("Usage: /penalty_pay 100")
-
-    async def penalty_exception_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Request exception for missed progress"""
-        if not update.message or not update.effective_user:
-            return
-        
-        # Check authorization
-        if not self.penalty_manager.is_authorized(update.effective_user.id):
-            await update.message.reply_text("❌ Only team leader (Extreme) can use penalty commands! 🔒")
-            return
-        
-        if not context.args:
-            await update.message.reply_text("Usage: /penalty_exception <reason>")
-            return
-        
-        reason = " ".join(context.args)
-        username = f"@{update.effective_user.username or 'unknown'}"
-        result = self.penalty_manager.add_exception(username, reason)
-        await update.message.reply_text(result['message'])
-
-    async def penalty_tips_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Get tips to recover from penalties"""
-        if not update.message or not update.effective_user:
-            return
-        
-        # Check authorization
-        if not self.penalty_manager.is_authorized(update.effective_user.id):
-            await update.message.reply_text("❌ Only team leader (Extreme) can use penalty commands! 🔒")
-            return
-        
-        tips = self.penalty_manager.get_recovery_tips()
-        await update.message.reply_text(tips)
+        res = self.penalty_manager.complete_penalty()
+        await update.message.reply_text(res['message'])
 
     async def error_handler(self, update: object,
                             context: ContextTypes.DEFAULT_TYPE):
@@ -803,12 +720,8 @@ Please respond considering the conversation history and context.
             BotCommand("todo", "Manage todos"),
             BotCommand("trivia", "Play crypto trivia"),
             BotCommand("getvideo", "Extract video from Instagram/X"),
-            BotCommand("penalty_status", "Check penalty status (Neel only)"),
-            BotCommand("penalty_miss", "Record missed progress (Neel)"),
-            BotCommand("penalty_done", "Mark progress as done"),
-            BotCommand("penalty_pay", "Pay penalty amount"),
-            BotCommand("penalty_exception", "Request exception"),
-            BotCommand("penalty_tips", "Get recovery tips"),
+            BotCommand("Penalty_initial", "Dhamki + 100rs penalty for Neel"),
+            BotCommand("Penalty_done", "Stop penalty & check 18% interest"),
         ]
 
         await application.bot.set_my_commands(commands)
@@ -872,13 +785,9 @@ def main():
     application.add_handler(CommandHandler("todo", bot.todo_command))
     application.add_handler(CommandHandler("trivia", bot.trivia_command))
     
-    # Penalty system commands
-    application.add_handler(CommandHandler("penalty_status", bot.penalty_status_command))
-    application.add_handler(CommandHandler("penalty_miss", bot.penalty_miss_command))
-    application.add_handler(CommandHandler("penalty_done", bot.penalty_done_command))
-    application.add_handler(CommandHandler("penalty_pay", bot.penalty_pay_command))
-    application.add_handler(CommandHandler("penalty_exception", bot.penalty_exception_command))
-    application.add_handler(CommandHandler("penalty_tips", bot.penalty_tips_command))
+    # Penalty system commands (Simplified)
+    application.add_handler(CommandHandler("Penalty_initial", bot.penalty_initial_command))
+    application.add_handler(CommandHandler("Penalty_done", bot.penalty_done_command))
 
     # Handle all other messages
     application.add_handler(
