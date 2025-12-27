@@ -1,12 +1,12 @@
 """
 Simple penalty system for Neel
-Commands: /Penalty_initial (start) and /Penalty_done (complete)
+Commands: /penalty_initial (start) and /penalty_done (complete)
 Interest: 18% if not done within 24 hours
 """
 
 import json
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, Optional
 
 class PenaltyManager:
@@ -38,9 +38,11 @@ class PenaltyManager:
         return user_id == self.TEAM_LEADER_ID
 
     def start_penalty(self) -> Dict:
-        now = datetime.now()
+        ist_offset = timedelta(hours=5, minutes=30)
+        now_ist = datetime.now(timezone.utc) + ist_offset
+        
         self.data['current'] = {
-            'start_time': now.isoformat(),
+            'start_time': now_ist.isoformat(),
             'amount': self.INITIAL_AMOUNT,
             'status': 'pending'
         }
@@ -48,19 +50,19 @@ class PenaltyManager:
         return {
             'amount': self.INITIAL_AMOUNT,
             'sticker': self.STICKER_ID,
-            'time': now.strftime("%Y-%m-%d %H:%M:%S")
+            'time': now_ist.strftime("%Y-%m-%d %H:%M:%S")
         }
 
     def complete_penalty(self) -> Dict:
         if 'current' not in self.data or self.data['current']['status'] != 'pending':
             return {'success': False, 'message': "Koi active penalty nahi hai! 🤷‍♂️"}
 
+        ist_offset = timedelta(hours=5, minutes=30)
         curr = self.data['current']
         start_time = datetime.fromisoformat(curr['start_time'])
-        now = datetime.now()
+        now_ist = datetime.now(timezone.utc) + ist_offset
         
-        # Check 24h interest
-        elapsed = now - start_time
+        elapsed = now_ist - start_time
         final_amount = curr['amount']
         interest_added = 0
         
@@ -69,7 +71,7 @@ class PenaltyManager:
             final_amount += interest_added
 
         curr['status'] = 'completed'
-        curr['end_time'] = now.isoformat()
+        curr['end_time'] = now_ist.isoformat()
         curr['final_amount'] = final_amount
         
         if 'history' not in self.data:
@@ -79,7 +81,7 @@ class PenaltyManager:
         
         self._save_data()
         
-        msg = f"✅ Penalty Done!\n\nStart: {start_time.strftime('%Y-%m-%d %H:%M')}\nEnd: {now.strftime('%Y-%m-%d %H:%M')}"
+        msg = f"✅ Penalty Done!\n\nStart (IST): {start_time.strftime('%Y-%m-%d %H:%M:%S')}\nEnd (IST): {now_ist.strftime('%Y-%m-%d %H:%M:%S')}"
         if interest_added > 0:
             msg += f"\n\n⚠️ 24h se zyada ho gaye! 18% interest lag gaya.\nFinal Amount: ₹{final_amount:.2f}"
         else:

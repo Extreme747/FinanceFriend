@@ -559,65 +559,104 @@ Please respond considering the conversation history and context.
     async def reminder_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Set a reminder"""
         if not update.effective_user or not update.message or not context.args:
-            await update.message.reply_text("Usage: /reminder 5 <message>")
+            await update.message.reply_text("Usage: /reminder 10m Take a break")
             return
+        
         try:
-            mins = int(context.args[0])
-            text = " ".join(context.args[1:]) if len(context.args) > 1 else "Reminder!"
-            result = ReminderManager.add_reminder(update.effective_user.id, text, mins)
-            await update.message.reply_text(result)
+            time_str = context.args[0]
+            text = " ".join(context.args[1:])
+            
+            # Simple parser for 10m, 1h, etc.
+            minutes = 0
+            if time_str.endswith('m'):
+                minutes = int(time_str[:-1])
+            elif time_str.endswith('h'):
+                minutes = int(time_str[:-1]) * 60
+            
+            if minutes > 0:
+                user_id = update.effective_user.id
+                context.job_queue.run_once(
+                    self._reminder_callback,
+                    when=minutes * 60,
+                    data={'chat_id': update.effective_chat.id, 'text': text, 'user_id': user_id},
+                    name=f"reminder_{user_id}_{datetime.now().timestamp()}"
+                )
+                await update.message.reply_text(f"✅ Reminder set for {time_str}: {text}")
+            else:
+                await update.message.reply_text("Please use format like 10m or 1h")
         except:
-            await update.message.reply_text("Usage: /reminder 5 <message>")
+            await update.message.reply_text("Usage: /reminder 10m Take a break")
+
+    async def _reminder_callback(self, context: ContextTypes.DEFAULT_TYPE):
+        job = context.job
+        await context.bot.send_message(chat_id=job.data['chat_id'], text=f"🔔 REMINDER: {job.data['text']}")
 
     async def watchlist_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Manage watchlist"""
         if not update.effective_user or not update.message:
             return
+        
         user_id = update.effective_user.id
         if not context.args:
-            result = Watchlist.get_watchlist(user_id)
-        elif context.args[0] == 'add' and len(context.args) > 1:
-            result = Watchlist.add_to_watchlist(user_id, context.args[1])
-        elif context.args[0] == 'remove' and len(context.args) > 1:
-            result = Watchlist.remove_from_watchlist(user_id, context.args[1])
-        else:
-            result = "Usage: /watchlist or /watchlist add BTC or /watchlist remove BTC"
-        await update.message.reply_text(result)
+            # Show watchlist
+            watchlist = Watchlist.get_watchlist(user_id)
+            if not watchlist:
+                await update.message.reply_text("Your watchlist is empty. Add items with /watchlist add BTC")
+            else:
+                msg = "🔭 Your Watchlist:\n" + "\n".join([f"• {item}" for item in watchlist])
+                await update.message.reply_text(msg)
+            return
+        
+        action = context.args[0].lower()
+        if action == 'add' and len(context.args) > 1:
+            symbol = context.args[1].upper()
+            Watchlist.add_to_watchlist(user_id, symbol)
+            await update.message.reply_text(f"✅ Added {symbol} to your watchlist")
+        elif action == 'remove' and len(context.args) > 1:
+            symbol = context.args[1].upper()
+            Watchlist.remove_from_watchlist(user_id, symbol)
+            await update.message.reply_text(f"❌ Removed {symbol} from your watchlist")
 
     async def leaderboard_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Show leaderboard"""
+        """View leaderboard"""
         if not update.message:
             return
-        result = Leaderboard.get_leaderboard()
-        await update.message.reply_text(result)
+        leaderboard = Leaderboard.get_leaderboard()
+        await update.message.reply_text(leaderboard)
 
     async def quote_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Get motivational quote"""
         if not update.message:
             return
-        result = MotivationalContent.get_daily_quote()
-        await update.message.reply_text(result)
+        quote = MotivationalContent.get_random_quote()
+        await update.message.reply_text(quote)
 
     async def tips_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Get trading tips"""
         if not update.message:
             return
-        result = MotivationalContent.get_trading_tip()
-        await update.message.reply_text(result)
+        tip = MotivationalContent.get_trading_tip()
+        await update.message.reply_text(tip)
 
     async def stats_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Show group stats"""
-        if not update.message:
+        """View group stats"""
+        if not update.message or not update.effective_chat:
             return
-        result = GroupStats.get_stats()
-        await update.message.reply_text(result)
+        chat_id = update.effective_chat.id
+        stats = GroupStats.get_group_stats(chat_id)
+        await update.message.reply_text(stats)
 
     async def gif_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Share a GIF"""
-        if not update.message:
+        if not update.message or not context.args:
+            await update.message.reply_text("Usage: /gif crypto")
             return
-        result = GifManager.get_gif_emoji()
-        await update.message.reply_text(result)
+        query = " ".join(context.args)
+        gif_url = GifManager.get_random_gif(query)
+        if gif_url:
+            await update.message.reply_animation(animation=gif_url)
+        else:
+            await update.message.reply_text("No GIFs found for that query.")
 
     async def convert_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Convert currency"""
@@ -626,7 +665,9 @@ Please respond considering the conversation history and context.
             return
         try:
             amount = float(context.args[0])
-            result = CurrencyConverter.convert(amount, context.args[1], context.args[2])
+            from_curr = context.args[1].upper()
+            to_curr = context.args[2].upper()
+            result = await CurrencyConverter.convert(amount, from_curr, to_curr)
             await update.message.reply_text(result)
         except:
             await update.message.reply_text("Usage: /convert 100 USD INR")
@@ -634,10 +675,10 @@ Please respond considering the conversation history and context.
     async def translate_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Translate text"""
         if not update.message or not context.args:
-            await update.message.reply_text("Usage: /translate hello")
+            await update.message.reply_text("Usage: /translate Hello (to Hindi)")
             return
         text = " ".join(context.args)
-        result = TranslationHelper.translate(text, 'hindi')
+        result = await TranslationHelper.translate(text)
         await update.message.reply_text(result)
 
     async def todo_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -646,19 +687,28 @@ Please respond considering the conversation history and context.
             return
         user_id = update.effective_user.id
         if not context.args:
-            result = TodoManager.get_todos(user_id)
-        elif context.args[0] == 'add' and len(context.args) > 1:
-            task = " ".join(context.args[1:])
-            result = TodoManager.add_todo(user_id, task)
-        elif context.args[0] == 'done' and len(context.args) > 1:
+            todos = TodoManager.get_todos(user_id)
+            if not todos:
+                await update.message.reply_text("Your todo list is empty.")
+            else:
+                msg = "📝 Your Todos:\n" + "\n".join([f"{i+1}. {'✅' if t['done'] else '⭕'} {t['text']}" for i, t in enumerate(todos)])
+                await update.message.reply_text(msg)
+            return
+        
+        action = context.args[0].lower()
+        if action == 'add' and len(context.args) > 1:
+            text = " ".join(context.args[1:])
+            TodoManager.add_todo(user_id, text)
+            await update.message.reply_text(f"✅ Added to todo list")
+        elif action == 'done' and len(context.args) > 1:
             try:
-                task_num = int(context.args[1])
-                result = TodoManager.complete_todo(user_id, task_num)
+                idx = int(context.args[1]) - 1
+                TodoManager.mark_done(user_id, idx)
+                await update.message.reply_text(f"✅ Marked as done")
             except:
-                result = "Usage: /todo done 1"
+                await update.message.reply_text("Usage: /todo done 1")
         else:
-            result = "Usage: /todo or /todo add <task> or /todo done 1"
-        await update.message.reply_text(result)
+            await update.message.reply_text("Usage: /todo or /todo add <task> or /todo done 1")
 
     async def trivia_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Play crypto trivia"""
@@ -666,6 +716,7 @@ Please respond considering the conversation history and context.
             return
         question, answer = Trivia.get_trivia_question()
         await update.message.reply_text(question)
+
 
     async def penalty_initial_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Start 100rs penalty for Neel"""
@@ -677,11 +728,19 @@ Please respond considering the conversation history and context.
         
         res = self.penalty_manager.start_penalty()
         try:
-            await update.message.reply_sticker(sticker=res['sticker'])
+            # Send sticker as a standalone message to avoid tagging the sender
+            await context.bot.send_sticker(chat_id=update.effective_chat.id, sticker=res['sticker'])
         except Exception as e:
             logger.error(f"Error sending sticker: {e}")
             
-        await update.message.reply_text(f"💀 PENALTY STARTED! 💀\n\nTarget: @Er_Stranger (Neel)\nAmount: ₹{res['amount']}\nTime: {res['time']}\n\nAyaka is watching! 24 ghante me kaam khatam karo varna 18% interest lagega! 🤣🔥")
+        # Mention Neel in the message
+        await update.message.reply_text(
+            f"💀 PENALTY STARTED! 💀\n\n"
+            f"Target: @Er_Stranger (Neel)\n"
+            f"Amount: ₹{res['amount']}\n"
+            f"Time (IST): {res['time']}\n\n"
+            f"Ayaka is watching! 24 ghante me kaam khatam karo @Er_Stranger varna 18% interest lagega! 🤣🔥"
+        )
 
     async def penalty_done_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Complete penalty"""
@@ -730,22 +789,43 @@ Please respond considering the conversation history and context.
 
         await application.bot.set_my_commands(commands)
 
+    async def post_init(self, app):
+        """Post-initialization tasks"""
+        # Set bot commands
+        await self.setup_bot_commands(app)
+        
+        # Schedule daily tribute
+        # APScheduler is used here for reliability
+        from apscheduler.schedulers.asyncio import AsyncIOScheduler
+        scheduler = AsyncIOScheduler()
+        
+        # Add daily tribute job (12:00:00)
+        # Using specific hours/minutes/seconds for precision
+        scheduler.add_job(
+            self.send_daily_tribute,
+            'cron',
+            hour=12,
+            minute=0,
+            second=0,
+            args=[app],
+            id='daily_pramod_tribute'
+        )
+        
+        scheduler.start()
+        logger.info(f"Daily tribute scheduled for 12:00:00 to @{self.config.PRAMOD_USERNAME}")
+
 
 def main():
     """Main function to start the bot"""
-    # Get bot token from environment
-    bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
-    if not bot_token:
+    token = os.environ.get("TELEGRAM_BOT_TOKEN")
+    if not token:
         logger.error("TELEGRAM_BOT_TOKEN not found in environment variables")
         return
 
-    # Initialize bot
     bot = CryptoStocksBot()
+    application = Application.builder().token(token).post_init(bot.post_init).build()
 
-    # Create application
-    application = Application.builder().token(bot_token).build()
-
-    # Add handlers
+    # Basic commands
     application.add_handler(CommandHandler("start", bot.start))
     application.add_handler(CommandHandler("help", bot.help_command))
     application.add_handler(CommandHandler("learn", bot.learn_command))
@@ -755,21 +835,14 @@ def main():
     application.add_handler(CommandHandler("quiz", bot.quiz_command))
     application.add_handler(CommandHandler("reset", bot.reset_command))
 
-    # Add module-specific handlers
-    application.add_handler(CommandHandler("crypto_basics",
-                                           bot.crypto_command))
-    application.add_handler(
-        CommandHandler("blockchain", bot.blockchain_command))
-    application.add_handler(CommandHandler("stocks_basics",
-                                           bot.stocks_command))
-    application.add_handler(
-        CommandHandler("technical_analysis", bot.technical_analysis_command))
-    application.add_handler(
-        CommandHandler("risk_management", bot.risk_management_command))
+    # Learning modules
+    application.add_handler(CommandHandler("blockchain", bot.blockchain_command))
+    application.add_handler(CommandHandler("technical_analysis", bot.technical_analysis_command))
+    application.add_handler(CommandHandler("risk_management", bot.risk_management_command))
     
-    # Tribute control commands (admin only)
-    application.add_handler(CommandHandler("stop_tribute", bot.stop_tribute_command))
+    # Tribute commands
     application.add_handler(CommandHandler("start_tribute", bot.start_tribute_command))
+    application.add_handler(CommandHandler("stop_tribute", bot.stop_tribute_command))
     
     # Video extraction command
     application.add_handler(CommandHandler("getvideo", bot.getvideo_command))
@@ -800,27 +873,9 @@ def main():
     # Error handler
     application.add_error_handler(bot.error_handler)
 
-    # Setup commands menu and daily jobs
-    async def post_init(app):
-        await bot.setup_bot_commands(app)
-        
-        # Schedule daily tribute at 12 PM
-        job_queue = app.job_queue
-        tribute_time = time(hour=12, minute=0)  # 12:00 PM
-        job_queue.run_daily(
-            bot.send_daily_tribute,
-            time=tribute_time,
-            name="daily_pramod_tribute"
-        )
-        logger.info(f"Daily tribute scheduled for {tribute_time} to @{bot.config.PRAMOD_USERNAME}")
-
-    application.post_init = post_init
-
-    # Start the bot
     logger.info("Starting Crypto & Stocks Educational Bot...")
     application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 
 if __name__ == "__main__":
     main()
-# GHOST BUSTED
