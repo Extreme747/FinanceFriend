@@ -92,8 +92,8 @@ Penalty system: Restricted to team leader only - tracks daily progress for Neel 
   - `/penalty_pay <amount>` - Pay penalty amount
   - `/penalty_exception <reason>` - Request exception (emails theshul747@gmail.com)
   - `/penalty_tips` - Get recovery tips
-  - Rules: ₹100 per miss, 28% late interest, auto-donation after >2 consecutive skips without payment
-  - Authorization: Team leader ID (5587821011) only
+    - Rules: ₹100 per miss, 18% late interest
+    - Authorization: Team leader ID (5587821011) only
 
 ## Configuration Management
 - **Centralized Config**: Bot configuration class containing user definitions, tribute settings, learning topics
@@ -216,5 +216,5 @@ python main.py
 - `/penalty_tips` - Get recovery tips
 
 **Interactive:**
-- Chat naturally and Ayaka will respond with context awareness
-- In groups, tag the bot or call "Ayaka" to get responses
+- Chat naturally and LYRA will respond with context awareness
+- In groups, tag the bot or call "LYRA" to get responses
