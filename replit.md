@@ -1,6 +1,6 @@
 # Overview
 
-This is a Telegram bot named "Ayaka" designed for cryptocurrency and stock market education. The bot provides interactive learning experiences with personalized progress tracking, educational content delivery, AI-powered responses through Google's Gemini AI, daily tribute messages, and social media video extraction. Users can learn about trading, blockchain technology, and financial markets through structured modules, quizzes, and conversational interactions.
+This is a Telegram bot named "LYRA" designed for cryptocurrency and stock market education. The bot provides interactive learning experiences with personalized progress tracking, educational content delivery, AI-powered responses through Google's Gemini AI, daily tribute messages, and social media video extraction. Users can learn about trading, blockchain technology, and financial markets through structured modules, quizzes, and conversational interactions.
 
 # User Preferences
 
@@ -9,7 +9,7 @@ Bot display name: User prefers to be called "Extreme" rather than "bot_owner".
 Group chat behavior: Bot should only respond when tagged or when someone replies to its messages, not to every message.
 Friend recognition: Bot recognizes @Er_Stranger as "Neel", @Nexxxyzz as "Nex", @pr_amod18 as "Pramod".
 Group memory: Bot remembers group conversations between friends and maintains context of shared discussions.
-Bot name: "Ayaka" - responds when called by this name in group chats.
+Bot name: "LYRA" - responds when called by this name in group chats.
 Typing indicator: Bot shows "typing" animation when generating responses (for better UX).
 Daily tributes: Bot sends daily tribute message to Pramod at 12 PM (auto-enabled).
 Video extraction: Bot can extract and send videos from Instagram and X (Twitter) posts.

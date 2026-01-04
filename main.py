@@ -65,7 +65,7 @@ class CryptoStocksBot:
 
         welcome_message = f"""🚀 Welcome to Crypto & Stocks Learning Bot! 
 
-Hey {user_info['display_name']}! I'm Ayaka, your friendly AI tutor powered by Gemini Pro. I'm here to help you learn about cryptocurrency and stock trading! 
+Hey {user_info['display_name']}! I'm LYRA, your friendly AI tutor powered by Gemini Pro. I'm here to help you learn about cryptocurrency and stock trading! 
 
 🎯 What I can do:
 • Teach you crypto and stocks fundamentals
@@ -118,7 +118,7 @@ Let's start your financial education journey! What would you like to learn about
 /help - Show this help message
 /start - Restart the bot
 
-💡 **Tip:** You can also just chat with me naturally! Call me Ayaka and I'll remember our conversations and help you learn step by step.
+💡 **Tip:** You can also just chat with me naturally! Call me LYRA and I'll remember our conversations and help you learn step by step.
         """
 
         clean_help = self._clean_markdown_response(help_text)
@@ -276,7 +276,7 @@ Let's start your financial education journey! What would you like to learn about
 
         message_text = update.message.text
 
-        # In group chats, only respond if bot is mentioned, replied to, or called by name "Ayaka"
+        # In group chats, only respond if bot is mentioned, replied to, or called by name "LYRA"
         if update.message.chat.type in ['group', 'supergroup']:
             bot_username = context.bot.username
             is_mentioned = f"@{bot_username}" in message_text if bot_username else False
@@ -284,8 +284,8 @@ Let's start your financial education journey! What would you like to learn about
                 update.message.reply_to_message
                 and update.message.reply_to_message.from_user
                 and update.message.reply_to_message.from_user.is_bot)
-            is_called_by_name = "ayaka" in message_text.lower(
-            ) or "Ayaka" in message_text
+            is_called_by_name = "lyra" in message_text.lower(
+            ) or "LYRA" in message_text
 
             if not (is_mentioned or is_reply_to_bot or is_called_by_name):
                 return
@@ -386,7 +386,7 @@ When they reference previous conversations or inside jokes, acknowledge them. Be
 """
 
         context = f"""
-You are Ayaka, a friendly AI assistant with expertise in cryptocurrency, stock trading, and general conversation. Your name is Ayaka and you should introduce yourself as such when appropriate. {chat_context}
+You are LYRA, a friendly AI assistant with expertise in cryptocurrency, stock trading, and general conversation. Your name is LYRA and you should introduce yourself as such when appropriate. {chat_context}
 
 Current User Information:
 - Name: {user_info.get('display_name', 'Student')}
@@ -733,13 +733,13 @@ Please respond considering the conversation history and context.
         except Exception as e:
             logger.error(f"Error sending sticker: {e}")
             
-        # Mention Neel in the message
+            # Mention Neel in the message
         await update.message.reply_text(
             f"💀 PENALTY STARTED! 💀\n\n"
             f"Target: @Er_Stranger (Neel)\n"
             f"Amount: ₹{res['amount']}\n"
             f"Time (IST): {res['time']}\n\n"
-            f"Ayaka is watching! 24 ghante me kaam khatam karo @Er_Stranger varna 18% interest lagega! 🤣🔥"
+            f"LYRA is watching! 24 ghante me kaam khatam karo @Er_Stranger varna 18% interest lagega! 🤣🔥"
         )
 
     async def penalty_done_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
