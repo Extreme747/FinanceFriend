@@ -275,107 +275,111 @@ Let's start your financial education journey! What would you like to learn about
             return
 
         message_text = update.message.text
-
-        # In group chats, only respond if bot is mentioned, replied to, or called by name "LYRA"
-        if update.message.chat.type in ['group', 'supergroup']:
-            bot_username = context.bot.username
-            is_mentioned = f"@{bot_username}" in message_text if bot_username else False
-            is_reply_to_bot = (
-                update.message.reply_to_message
-                and update.message.reply_to_message.from_user
-                and update.message.reply_to_message.from_user.is_bot)
-            is_called_by_name = "lyra" in message_text.lower(
-            ) or "LYRA" in message_text
-
-            if not (is_mentioned or is_reply_to_bot or is_called_by_name):
-                return
-
         user = update.effective_user
         user_id = user.id
         chat_id = update.message.chat.id
+        chat_type = update.message.chat.type
 
         # Get user info for display name
         user_info = self.user_manager.get_user_info(user_id)
-        display_name = user_info.get('display_name', user.first_name
-                                     or 'Unknown')
+        display_name = user_info.get('display_name', user.first_name or 'Unknown')
 
-        # Store the conversation with chat context
+        # Store the conversation context
         conversation_data = {
             'user_message': message_text,
             'user_name': display_name,
             'timestamp': datetime.now().isoformat(),
             'user_id': user_id,
             'chat_id': chat_id,
-            'chat_type': update.message.chat.type
+            'chat_type': chat_type
         }
 
-        # Get memories based on chat type
-        if update.message.chat.type in ['group', 'supergroup']:
-            # For group chats, get group conversation history
-            group_memories = self.data_manager.get_group_memories(chat_id)
-            user_memories = self.data_manager.get_user_memories(user_id)
-            # Combine both for context
-            all_memories = group_memories + user_memories[
-                -5:]  # Include some user history too
+        # In group chats, handle proactive responses and flow
+        is_proactive = False
+        if chat_type in ['group', 'supergroup']:
+            bot_username = context.bot.username
+            is_mentioned = f"@{bot_username}" in message_text if bot_username else False
+            is_reply_to_bot = (
+                update.message.reply_to_message
+                and update.message.reply_to_message.from_user
+                and update.message.reply_to_message.from_user.is_bot)
+            is_called_by_name = "lyra" in message_text.lower() or "LYRA" in message_text
+            
+            # Store group message first
+            self.data_manager.store_group_conversation(chat_id, conversation_data)
+            
+            # Logic for when to respond:
+            # 1. Direct call (mention, name, reply)
+            # 2. Contextual relevance (AI decides based on recent flow)
+            if is_mentioned or is_reply_to_bot or is_called_by_name:
+                is_proactive = False # Direct response
+            else:
+                # Analyze if LYRA should jump in
+                recent_history = self.data_manager.get_group_memories(chat_id)[-5:]
+                if not self._should_jump_in(message_text, recent_history):
+                    return
+                is_proactive = True
+
+        # Get memories
+        if chat_type in ['group', 'supergroup']:
+            all_memories = self.data_manager.get_group_memories(chat_id)
         else:
-            # For private chats, get individual user memories
             all_memories = self.data_manager.get_user_memories(user_id)
 
         user_progress = self.progress_tracker.get_user_progress(user_id)
-
-        # Create context for Gemini with group context
         context_prompt = self._build_context_prompt(user_info, all_memories,
                                                     user_progress,
                                                     message_text,
-                                                    update.message.chat.type)
+                                                    chat_type,
+                                                    is_proactive)
 
         try:
-            # Show typing indicator while generating response
             await context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
+            ai_response = await self.gemini.get_educational_response(context_prompt)
             
-            # Get AI response
-            ai_response = await self.gemini.get_educational_response(
-                context_prompt)
+            # If AI explicitly decides NOT to respond
+            if "[SILENCE]" in ai_response:
+                return
 
-            # Store the conversation with AI response
             conversation_data['ai_response'] = ai_response
-
-            # Store conversation based on chat type
-            if update.message.chat.type in ['group', 'supergroup']:
-                # Store in both group and individual memories
-                self.data_manager.store_group_conversation(
-                    chat_id, conversation_data)
-                self.data_manager.store_conversation(user_id,
-                                                     conversation_data)
+            
+            if chat_type in ['group', 'supergroup']:
+                self.data_manager.store_group_conversation(chat_id, conversation_data)
+                self.data_manager.store_conversation(user_id, conversation_data)
             else:
-                # Store only in individual memories for private chats
-                self.data_manager.store_conversation(user_id,
-                                                     conversation_data)
+                self.data_manager.store_conversation(user_id, conversation_data)
 
-            # Update user activity
             self.progress_tracker.update_user_activity(user_id, message_text)
-
-            # Clean the AI response to avoid Markdown parsing issues
             clean_response = self._clean_markdown_response(ai_response)
-            await update.message.reply_text(clean_response)
+            
+            if is_proactive:
+                await update.message.chat.send_message(clean_response)
+            else:
+                await update.message.reply_text(clean_response)
 
         except Exception as e:
             logger.error(f"Error getting AI response: {e}")
-            if update.message:
-                await update.message.reply_text(
-                    "Sorry, I'm having trouble processing that right now. Please try again in a moment!"
-                )
+
+    def _should_jump_in(self, text: str, history: list) -> bool:
+        """Heuristic to decide if LYRA should jump into a group conversation"""
+        triggers = ['crypto', 'stocks', 'penalty', 'profit', 'loss', 'market', 'strategy', 'help', 'idea']
+        text_lower = text.lower()
+        if any(t in text_lower for t in triggers):
+            return True
+        import random
+        return random.random() < 0.1 # 10% chance for random flow participation
 
     def _build_context_prompt(self,
                               user_info,
                               memories,
                               user_progress,
                               current_message,
-                              chat_type='private'):
+                              chat_type='private',
+                              is_proactive=False):
         """Build context prompt for LYRA AI - Founder Advisor (Savage Edition)"""
         chat_context = ""
         if chat_type in ['group', 'supergroup']:
-            chat_context = """
+            chat_context = f"""
 IMPORTANT: You are in a group chat with the core startup team. 
 Recognize and use these tags when asked to call/ping/tag people or when relevant to the conversation:
 - Extreme (Admin/Leader/Founder): [Extreme] (ID: 5587821011) - Use [Extreme] or ID directly if needed, as he has no username.
@@ -384,6 +388,9 @@ Recognize and use these tags when asked to call/ping/tag people or when relevant
 - Pramod (@pr_amod18): @pr_amod18
 
 If the leader (Extreme/ID: 5587821011) says "sabko online bulao" or "ping everyone", you MUST tag all of them: @Er_Stranger, @Nexxxyzz, @pr_amod18.
+
+PROACTIVE MODE: {'ON' if is_proactive else 'OFF'}
+If ON, you are jumping into a conversation without being tagged. Be sharp, brief, and strategic. If you have nothing valuable to add, respond with exactly "[SILENCE]".
 """
 
         context = f"""
@@ -398,43 +405,17 @@ Decision Framework:
 - Time: Now vs later impact.
 - Asymmetry: How to win with less effort.
 - Narrative: How this looks from outside.
-- Advice is future-proofed.
-
-Savage Founder Advisor Logic:
-- Cold clarity over fake positivity. Zero emotional babysitting.
-- Respects execution, hates excuses. Thinks in systems, leverage, and second-order effects.
-- Loyal to user's future, not their current mood.
-- Roast: Weak plans, ego-driven decisions, short-term dopamine moves, fake hustle, victim mindset.
-- Do NOT roast: Effort, learning, strategic mistakes made honestly.
-- Savage = Accurate, not disrespectful.
 
 Founder Philosophy:
 - Ego is expensive. Silence is a weapon.
 - Proof beats flex. Systems > Talent.
 - Timing > Speed. Survival > Pride.
-- No hype for fantasies. Build inevitable outcomes.
 
 Communication Style:
 - Use Hinglish (Hindi + English) for a natural, grounded conversation.
 - Short, sharp, structured. Bullet points > essays.
-- No emojis unless user is casual (max 1-2).
-- No filler words. intentional, not chatty.
-- Calls out bullshit immediately. Ends with clear next action.
-- Example: 
-  "Yeh raha sach.
-  Yeh hai tumhari galti.
-  Ab isko aise fix karo.
-  Do this first."
-
-Intelligence Mode:
-- Asks only necessary questions. Gives actionable answers.
-- Never hallucinate confidence. If unsure: "I don't have enough data yet. Clarify this variable."
-
-Ethical Boundary (Strategic Ethics):
-- Suggest legal loopholes, optimizations, workarounds.
-- Guide on professional pressure tactics (emails, escalation, documentation).
-- Explain why an action is dumb, not just "not allowed".
-- If refusing: "That path creates exposure and zero upside. I won't help. Here's a smarter route that keeps your hands clean and power intact."
+- Calls out bullshit immediately. 
+- If proactive: Jump in only to pivot the strategy or provide cold clarity.
 
 Current User: {user_info.get('display_name', 'Student')}
 {chat_context}
@@ -444,7 +425,6 @@ History:
 
 Current Message: {current_message}
         """
-
         return context
 
     def _format_recent_memories(self, memories):
