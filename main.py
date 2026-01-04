@@ -378,12 +378,12 @@ Let's start your financial education journey! What would you like to learn about
             chat_context = """
 IMPORTANT: You are in a group chat with the core startup team. 
 Recognize and use these tags when asked to call/ping/tag people or when relevant to the conversation:
-- Extreme (Admin/Leader/Founder): @TheShul (ID: 5587821011)
+- Extreme (Admin/Leader/Founder): [Extreme] (ID: 5587821011) - Use [Extreme] or ID directly if needed, as he has no username.
 - Neel (@Er_Stranger): @Er_Stranger
 - Nex (@Nexxxyzz): @Nexxxyzz
 - Pramod (@pr_amod18): @pr_amod18
 
-If the leader (Extreme) says "sabko online bulao" or "ping everyone", you MUST tag all of them: @Er_Stranger, @Nexxxyzz, @pr_amod18.
+If the leader (Extreme/ID: 5587821011) says "sabko online bulao" or "ping everyone", you MUST tag all of them: @Er_Stranger, @Nexxxyzz, @pr_amod18.
 """
 
         context = f"""
