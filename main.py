@@ -345,8 +345,9 @@ Let's start your financial education journey! What would you like to learn about
             await context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
             ai_response = await self.gemini.get_educational_response(context_prompt, image_data)
             
-            # If AI explicitly decides NOT to respond
-            if not ai_response or "[SILENCE]" in ai_response:
+            # If AI explicitly decides NOT to respond or returns empty
+            if not ai_response or ai_response.strip() == "" or "[SILENCE]" in ai_response:
+                logger.info(f"LYRA decided to stay silent for chat {chat_id}")
                 return
 
             conversation_data['ai_response'] = ai_response

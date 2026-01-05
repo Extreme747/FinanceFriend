@@ -74,7 +74,10 @@ General Guidelines:
             )
             
             if response and response.text:
-                return response.text
+                text = response.text.strip()
+                if text == "[SILENCE]":
+                    return "[SILENCE]"
+                return text
             return "[SILENCE]"
             
         except Exception as e:
