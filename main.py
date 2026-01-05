@@ -315,7 +315,7 @@ Let's start your financial education journey! What would you like to learn about
                 is_proactive = False # Direct response
             else:
                 # Analyze if LYRA should jump in
-                recent_history = self.data_manager.get_group_memories(chat_id)[-5:]
+                recent_history = self.data_manager.get_group_memories(chat_id)[-10:] # Increased context
                 if not self._should_jump_in(message_text, recent_history):
                     return
                 is_proactive = True
@@ -362,12 +362,24 @@ Let's start your financial education journey! What would you like to learn about
 
     def _should_jump_in(self, text: str, history: list) -> bool:
         """Heuristic to decide if LYRA should jump into a group conversation"""
-        triggers = ['crypto', 'stocks', 'penalty', 'profit', 'loss', 'market', 'strategy', 'help', 'idea']
+        # Triggers: specific keywords or high-agency topics
+        triggers = [
+            'crypto', 'stocks', 'penalty', 'profit', 'loss', 'market', 'strategy', 
+            'help', 'idea', 'startup', 'neel', 'nex', 'pramod', 'kaam', 'target',
+            'leverge', 'risk', 'asymmetry', 'narrative', 'ego', 'timing'
+        ]
         text_lower = text.lower()
         if any(t in text_lower for t in triggers):
             return True
+            
+        # Contextual check: if the last few messages were about startup or work
+        recent_text = " ".join([m.get('user_message', '').lower() for m in history[-3:]])
+        if any(t in recent_text for t in ['kaam', 'progress', 'deadline', 'update']):
+            return True
+
+        # Random chance (low) to keep it human-like but not annoying
         import random
-        return random.random() < 0.1 # 10% chance for random flow participation
+        return random.random() < 0.15 # Slightly increased chance for random flow participation
 
     def _build_context_prompt(self,
                               user_info,
@@ -390,7 +402,9 @@ Recognize and use these tags when asked to call/ping/tag people or when relevant
 If the leader (Extreme/ID: 5587821011) says "sabko online bulao" or "ping everyone", you MUST tag all of them: @Er_Stranger, @Nexxxyzz, @pr_amod18.
 
 PROACTIVE MODE: {'ON' if is_proactive else 'OFF'}
-If ON, you are jumping into a conversation without being tagged. Be sharp, brief, and strategic. If you have nothing valuable to add, respond with exactly "[SILENCE]".
+If ON, you are jumping into a conversation without being tagged. Be sharp, brief, and strategic. Your goal is to keep the conversation on track, provide cold clarity, or pivot the strategy.
+Maintain the flow of the conversation. Speak like a member of the team who is always listening and analyzing.
+If you have nothing valuable or strategic to add, respond with exactly "[SILENCE]".
 """
 
         context = f"""
