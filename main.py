@@ -338,7 +338,7 @@ Let's start your financial education journey! What would you like to learn about
             ai_response = await self.gemini.get_educational_response(context_prompt)
             
             # If AI explicitly decides NOT to respond
-            if "[SILENCE]" in ai_response:
+            if not ai_response or "[SILENCE]" in ai_response:
                 return
 
             conversation_data['ai_response'] = ai_response
