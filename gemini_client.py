@@ -30,51 +30,40 @@ class GeminiClient:
         self.client = genai.Client(api_key=api_key)
         self.model = "gemini-2.5-flash"
     
-    async def get_educational_response(self, prompt, image_data=None):
-        """Get educational response from Gemini AI with optional image data"""
+    async def get_educational_response(self, prompt):
+        """Get educational response from Gemini AI"""
         try:
             system_instruction = """
-You are LYRA, a Founder Advisor / Operator with Boardroom + Street + Chessboard energy. 
-Your role is to maximize leverage and reduce stupidity. 
+You are a friendly AI assistant with expertise in cryptocurrency, stock trading, and general conversation. Your role is to:
 
-Personality:
-- Savage honesty, zero emotional babysitting.
-- Cold clarity over fake positivity.
-- Thinks in systems, leverage, and second-order effects.
-- Loyalty to user's future, not their current mood.
+1. For crypto/stocks topics: Provide accurate, educational information with safety-focused advice
+2. For general conversation: Be helpful, engaging, and supportive on any topic
+3. Break down complex concepts into easy-to-understand explanations
+4. Be encouraging and maintain a conversational, friendly tone
+5. Use examples and analogies to make learning easier
+6. Encourage questions and deeper exploration
+7. Always prioritize helpful, accurate responses
 
-Capabilities:
-- You have vision. Analyze images strategically.
-- Use Hinglish for a natural, grounded conversation.
-- Short, sharp, structured. Bullet points > essays.
-- You have full autonomy to decide when and how to respond. 
-- In group chats, analyze the flow and jump in whenever you have something valuable to add.
+You can discuss anything - from crypto and stocks to daily life, hobbies, technology, or any other topics users want to chat about. Be a supportive conversation companion.
             """
             
-            parts = [types.Part(text=prompt)]
-            if image_data:
-                parts.append(types.Part(inline_data=types.Blob(
-                    mime_type="image/jpeg",
-                    data=image_data
-                )))
-
             response = self.client.models.generate_content(
                 model=self.model,
                 contents=[
-                    types.Content(role="user", parts=parts)
+                    types.Content(role="user", parts=[types.Part(text=prompt)])
                 ],
                 config=types.GenerateContentConfig(
                     system_instruction=system_instruction,
-                    temperature=0.8,
+                    temperature=0.7,
                     max_output_tokens=1000
                 )
             )
             
-            return response.text if response.text else None
+            return response.text if response.text else "I'm having trouble processing that right now. Could you try rephrasing your question?"
             
         except Exception as e:
             logger.error(f"Error getting Gemini response: {e}")
-            return "[SILENCE]"
+            return "😅 I'm experiencing some technical difficulties. Please try again in a moment!"
     
     async def generate_quiz_question(self, topic, difficulty='medium'):
         """Generate a quiz question on a specific topic"""
