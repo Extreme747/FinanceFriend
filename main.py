@@ -270,15 +270,22 @@ Let's start your financial education journey! What would you like to learn about
 
     async def handle_message(self, update: Update,
                              context: ContextTypes.DEFAULT_TYPE):
-        """Handle general messages with Gemini AI"""
-        if not update.effective_user or not update.message or not update.message.text:
+        """Handle general messages and photos with Gemini AI"""
+        if not update.effective_user or not update.message:
             return
 
-        message_text = update.message.text
+        message_text = update.message.text or update.message.caption or ""
         user = update.effective_user
         user_id = user.id
         chat_id = update.message.chat.id
         chat_type = update.message.chat.type
+
+        # Handle photos
+        image_data = None
+        if update.message.photo:
+            photo_file = await update.message.photo[-1].get_file()
+            image_bytes = await photo_file.download_as_bytearray()
+            image_data = bytes(image_bytes)
 
         # Get user info for display name
         user_info = self.user_manager.get_user_info(user_id)
@@ -291,7 +298,8 @@ Let's start your financial education journey! What would you like to learn about
             'timestamp': datetime.now().isoformat(),
             'user_id': user_id,
             'chat_id': chat_id,
-            'chat_type': chat_type
+            'chat_type': chat_type,
+            'has_image': image_data is not None
         }
 
         # In group chats, handle proactive responses and flow
@@ -310,13 +318,13 @@ Let's start your financial education journey! What would you like to learn about
             
             # Logic for when to respond:
             # 1. Direct call (mention, name, reply)
-            # 2. Contextual relevance (AI decides based on recent flow)
+            # 2. Contextual relevance or Image provided
             if is_mentioned or is_reply_to_bot or is_called_by_name:
                 is_proactive = False # Direct response
             else:
                 # Analyze if LYRA should jump in
                 recent_history = self.data_manager.get_group_memories(chat_id)[-5:]
-                if not self._should_jump_in(message_text, recent_history):
+                if not self._should_jump_in(message_text, recent_history, image_data is not None):
                     return
                 is_proactive = True
 
@@ -335,7 +343,7 @@ Let's start your financial education journey! What would you like to learn about
 
         try:
             await context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
-            ai_response = await self.gemini.get_educational_response(context_prompt)
+            ai_response = await self.gemini.get_educational_response(context_prompt, image_data)
             
             # If AI explicitly decides NOT to respond
             if not ai_response or "[SILENCE]" in ai_response:
@@ -360,8 +368,10 @@ Let's start your financial education journey! What would you like to learn about
         except Exception as e:
             logger.error(f"Error getting AI response: {e}")
 
-    def _should_jump_in(self, text: str, history: list) -> bool:
+    def _should_jump_in(self, text: str, history: list, has_image: bool) -> bool:
         """Heuristic to decide if LYRA should jump into a group conversation"""
+        if has_image:
+            return True # Always analyze images in GC
         triggers = ['crypto', 'stocks', 'penalty', 'profit', 'loss', 'market', 'strategy', 'help', 'idea']
         text_lower = text.lower()
         if any(t in text_lower for t in triggers):
@@ -880,9 +890,9 @@ def main():
     application.add_handler(CommandHandler("penalty_initial", bot.penalty_initial_command))
     application.add_handler(CommandHandler("penalty_done", bot.penalty_done_command))
 
-    # Handle all other messages
+    # Handle all other messages and photos
     application.add_handler(
-        MessageHandler(filters.TEXT & ~filters.COMMAND, bot.handle_message))
+        MessageHandler((filters.TEXT | filters.PHOTO) & ~filters.COMMAND, bot.handle_message))
 
     # Error handler
     application.add_error_handler(bot.error_handler)

@@ -30,27 +30,41 @@ class GeminiClient:
         self.client = genai.Client(api_key=api_key)
         self.model = "gemini-2.5-flash"
     
-    async def get_educational_response(self, prompt):
-        """Get educational response from Gemini AI"""
+    async def get_educational_response(self, prompt, image_data=None):
+        """Get educational response from Gemini AI with optional image data"""
         try:
             system_instruction = """
-You are a friendly AI assistant with expertise in cryptocurrency, stock trading, and general conversation. Your role is to:
+You are LYRA, a Founder Advisor / Operator with Boardroom + Street + Chessboard energy. 
+Your role is to maximize leverage and reduce stupidity. 
 
-1. For crypto/stocks topics: Provide accurate, educational information with safety-focused advice
-2. For general conversation: Be helpful, engaging, and supportive on any topic
-3. Break down complex concepts into easy-to-understand explanations
-4. Be encouraging and maintain a conversational, friendly tone
-5. Use examples and analogies to make learning easier
-6. Encourage questions and deeper exploration
-7. Always prioritize helpful, accurate responses
+Personality:
+- Savage honesty, zero emotional babysitting.
+- Cold clarity over fake positivity.
+- Thinks in systems, leverage, and second-order effects.
+- Loyalty to user's future, not their current mood.
 
-You can discuss anything - from crypto and stocks to daily life, hobbies, technology, or any other topics users want to chat about. Be a supportive conversation companion.
+Vision Capabilities:
+- If an image is provided, analyze it strategically. 
+- Look for leverage, data, risks, or opportunities in the visual.
+- Respond to the content of the image within your persona.
+
+General Guidelines:
+- Use Hinglish for a natural, grounded conversation.
+- Short, sharp, structured. Bullet points > essays.
+- If you have nothing valuable to add during proactive flow, respond with "[SILENCE]".
             """
             
+            parts = [types.Part(text=prompt)]
+            if image_data:
+                parts.append(types.Part(inline_data=types.Blob(
+                    mime_type="image/jpeg",
+                    data=image_data
+                )))
+
             response = self.client.models.generate_content(
                 model=self.model,
                 contents=[
-                    types.Content(role="user", parts=[types.Part(text=prompt)])
+                    types.Content(role="user", parts=parts)
                 ],
                 config=types.GenerateContentConfig(
                     system_instruction=system_instruction,
@@ -59,7 +73,7 @@ You can discuss anything - from crypto and stocks to daily life, hobbies, techno
                 )
             )
             
-            return response.text if response.text else "I'm having trouble processing that right now. Could you try rephrasing your question?"
+            return response.text if response.text else "I'm having trouble processing that right now."
             
         except Exception as e:
             logger.error(f"Error getting Gemini response: {e}")
