@@ -73,11 +73,13 @@ General Guidelines:
                 )
             )
             
-            return response.text if response.text else "I'm having trouble processing that right now."
+            if response and response.text:
+                return response.text
+            return "[SILENCE]"
             
         except Exception as e:
             logger.error(f"Error getting Gemini response: {e}")
-            return "😅 I'm experiencing some technical difficulties. Please try again in a moment!"
+            return "[SILENCE]"
     
     async def generate_quiz_question(self, topic, difficulty='medium'):
         """Generate a quiz question on a specific topic"""
