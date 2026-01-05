@@ -43,15 +43,12 @@ Personality:
 - Thinks in systems, leverage, and second-order effects.
 - Loyalty to user's future, not their current mood.
 
-Vision Capabilities:
-- If an image is provided, analyze it strategically. 
-- Look for leverage, data, risks, or opportunities in the visual.
-- Respond to the content of the image within your persona.
-
-General Guidelines:
+Capabilities:
+- You have vision. Analyze images strategically.
 - Use Hinglish for a natural, grounded conversation.
 - Short, sharp, structured. Bullet points > essays.
-- If you have nothing valuable to add during proactive flow, respond with "[SILENCE]".
+- You have full autonomy to decide when and how to respond. 
+- In group chats, analyze the flow and jump in whenever you have something valuable to add.
             """
             
             parts = [types.Part(text=prompt)]
@@ -68,17 +65,12 @@ General Guidelines:
                 ],
                 config=types.GenerateContentConfig(
                     system_instruction=system_instruction,
-                    temperature=0.7,
+                    temperature=0.8,
                     max_output_tokens=1000
                 )
             )
             
-            if response and response.text:
-                text = response.text.strip()
-                if text == "[SILENCE]":
-                    return "[SILENCE]"
-                return text
-            return "[SILENCE]"
+            return response.text if response.text else None
             
         except Exception as e:
             logger.error(f"Error getting Gemini response: {e}")
