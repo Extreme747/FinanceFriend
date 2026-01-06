@@ -453,18 +453,6 @@
   ],
   "6074998482": [
     {
-      "user_message": "Okau",
-      "timestamp": "2025-08-19T13:56:41.862843",
-      "user_id": 6074998482,
-      "ai_response": "Got it! \"Okau\" – perfect! Sounds like you're ready to dive in, which is fantastic! 🎉\n\nSince you mentioned you like things \"short and sweet,\" how about we kick things off with a super quick, foundational idea that's essential for both crypto and stocks?\n\nWe could tackle:\n\n*   **What's the *main goal* of investing in stocks or crypto in one sentence?** 🤔 (Super short!)\n*   Or, **What's the *simplest difference* between a stock and a cryptocurrency?** (Also very concise!)\n\nWhich one sounds like a good \"short and sweet\" starting point for you? Or do you have another quick question on your mind? 😊 Let me know!"
-    },
-    {
-      "user_message": "Okah",
-      "timestamp": "2025-08-19T13:56:59.611231",
-      "user_id": 6074998482,
-      "ai_response": "Awesome! \"Okah\" – I hear you loud and clear! 🎉 That's the spirit!\n\nYou mentioned you like things \"short and sweet,\" and I'm totally ready to deliver on that!\n\nJust to recap, we were thinking of kicking things off with a super quick, foundational idea. How about we pick one of these to start?\n\n*   **What's the *main goal* of investing in stocks or crypto in one sentence?** 🤔 (Super concise!)\n*   Or, **What's the *simplest difference* between a stock and a cryptocurrency?** (Also very brief!)\n\nWhich one feels like the perfect \"short and sweet\" launchpad for you today? Or perhaps you have another quick question bubbling up? 😊 Let me know!"
-    },
-    {
       "user_message": "Yeh bot ka access sab per nahi jana chahiye",
       "timestamp": "2025-08-19T13:57:06.049623",
       "user_id": 6074998482,
@@ -850,6 +838,26 @@
       "chat_id": -1002218070102,
       "chat_type": "supergroup",
       "ai_response": "Arre hello, hello, **Neel**! 👋\n\nMain toh soch rahi thi ki tum seedha **Pramod** ki 'welcome video' play karoge, aur tumne \"Hello\" bol diya! 😄\n\nKya hua, sab theek hai? Ya phir **Pramod** ki 'grand welcome party' ki preparations abhi bhi chal rahi hain? Ayaka toh abhi bhi popcorn lekar ready hai yeh '10min 5 min vale video' देखने के लिए! 😉\n\nJaldi batao, kya chal raha hai? Don't leave me hanging, I'm super curious about the 'secret sauce' behind this welcome! 😄"
+    },
+    {
+      "user_message": "Sahi hena screen",
+      "user_name": "Neel",
+      "timestamp": "2026-01-06T07:54:31.831515",
+      "user_id": 6074998482,
+      "chat_id": -1002218070102,
+      "chat_type": "supergroup",
+      "has_image": true,
+      "ai_response": "Screen theek hai, Neel.\nWallpaper accha hai, 'Tuesday' aur rain effect.\n\nLekin, yeh jo date dikh rahi hai \"06-01-2026\", yeh kya hai?\nTum future mein ho, ya system clock galat hai?\nCheck karo."
+    },
+    {
+      "user_message": "Aaj 6/01/2026 he sayad tum past me ho",
+      "user_name": "Neel",
+      "timestamp": "2026-01-06T07:55:11.881366",
+      "user_id": 6074998482,
+      "chat_id": -1002218070102,
+      "chat_type": "supergroup",
+      "has_image": false,
+      "ai_response": "Neel, facts check kar.\nAaj ki tareekh **[Current Date]** hai.\nTumhara system clock galat hai. Isko theek karo.\n\nData accuracy important hai."
     }
   ],
   "7297313127": [

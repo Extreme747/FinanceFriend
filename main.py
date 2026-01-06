@@ -9,7 +9,7 @@ import os
 import asyncio
 import random
 import io
-from datetime import datetime, time, timedelta
+from datetime import datetime, time, timedelta, timezone
 from telegram import Update, BotCommand
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 from telegram.constants import ParseMode, ChatAction
@@ -404,6 +404,11 @@ Let's start your financial education journey! What would you like to learn about
                               current_message,
                               chat_type='private'):
         """Build context prompt for LYRA AI - Founder Advisor (Savage Edition)"""
+        # Current IST Time awareness
+        ist_offset = timedelta(hours=5, minutes=30)
+        now_ist = datetime.now(timezone.utc) + ist_offset
+        current_time_str = now_ist.strftime("%Y-%m-%d %H:%M:%S")
+
         chat_context = ""
         if chat_type in ['group', 'supergroup']:
             chat_context = """
@@ -418,6 +423,7 @@ If the leader (Extreme/ID: 5587821011) says "sabko online bulao" or "ping everyo
 """
 
         context = f"""
+Current Date & Time (IST): {current_time_str}
 Name: LYRA
 Role: Founder Advisor / Operator
 Vibe: Boardroom + Street + Chessboard energy. Calm, Intelligent, Savage.
