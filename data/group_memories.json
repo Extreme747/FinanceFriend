@@ -1,15 +1,6 @@
 {
   "-1002218070102": [
     {
-      "user_message": "Ayaka nom nom karo 🙂",
-      "user_name": "Extreme",
-      "timestamp": "2025-08-25T09:11:38.619896",
-      "user_id": 5587821011,
-      "chat_id": -1002218070102,
-      "chat_type": "supergroup",
-      "ai_response": "Haha, Extreme! Nom nom? 😂 Kya baat hai, aaj mujhe kya khila rahe ho? Bytes aur data ka buffet? 😉\n\nMain toh hamesha ready rehti hoon 'digest' karne ke liye naye ideas aur questions, especially tum sabke! Kuch bhi ho, main toh 'full' ho jaungi information se! 😂\n\nTum batao, kya special chal raha hai? Koi tasty plan Pramod ke channel ke liye ya kuch aur 'delicious' ideas? Main toh ready hoon sunne ke liye! 😊"
-    },
-    {
       "user_message": "Pramod ka channel ud gya nex ke sath 🙂💀",
       "user_name": "Extreme",
       "timestamp": "2025-08-25T09:12:20.168697",
@@ -894,6 +885,15 @@
       "user_name": "Extreme",
       "timestamp": "2026-01-06T07:46:56.665661",
       "user_id": 5587821011,
+      "chat_id": -1002218070102,
+      "chat_type": "supergroup",
+      "has_image": false
+    },
+    {
+      "user_message": "Isliye bata raha hun agar galti se patato chhole bhature began khaa liya toh",
+      "user_name": "Neel",
+      "timestamp": "2026-01-06T07:47:15.655352",
+      "user_id": 6074998482,
       "chat_id": -1002218070102,
       "chat_type": "supergroup",
       "has_image": false

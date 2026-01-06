@@ -349,7 +349,12 @@ Let's start your financial education journey! What would you like to learn about
 
         user_progress = self.progress_tracker.get_user_progress(user_id)
 
-        # Create context for Gemini with group context
+        # Create context for Gemini with group context and reply context
+        replied_text = ""
+        if update.message.reply_to_message:
+            replied_text = update.message.reply_to_message.text or update.message.reply_to_message.caption or "[Media/Sticker]"
+            message_text = f"(Replying to: {replied_text})\n\n{message_text}"
+
         context_prompt = self._build_context_prompt(user_info, all_memories,
                                                     user_progress,
                                                     message_text,
