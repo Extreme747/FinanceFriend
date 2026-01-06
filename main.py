@@ -8,6 +8,7 @@ import logging
 import os
 import asyncio
 import random
+import io
 from datetime import datetime, time, timedelta
 from telegram import Update, BotCommand
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
@@ -271,11 +272,11 @@ Let's start your financial education journey! What would you like to learn about
 
     async def handle_message(self, update: Update,
                              context: ContextTypes.DEFAULT_TYPE):
-        """Handle general messages with Gemini AI"""
-        if not update.effective_user or not update.message or not update.message.text:
+        """Handle general messages and images with Gemini AI"""
+        if not update.effective_user or not update.message:
             return
 
-        message_text = update.message.text
+        message_text = update.message.text or update.message.caption or ""
         user = update.effective_user
         user_id = user.id
         chat_id = update.message.chat.id
@@ -284,6 +285,19 @@ Let's start your financial education journey! What would you like to learn about
         user_info = self.user_manager.get_user_info(user_id)
         display_name = user_info.get('display_name', user.first_name or 'Unknown')
 
+        # Handle images
+        image_data = None
+        if update.message.photo:
+            try:
+                # Get highest resolution photo
+                photo = update.message.photo[-1]
+                file = await context.bot.get_file(photo.file_id)
+                image_stream = io.BytesIO()
+                await file.download_to_memory(image_stream)
+                image_data = image_stream.getvalue()
+            except Exception as e:
+                logger.error(f"Error downloading image: {e}")
+
         # Store the conversation with chat context
         conversation_data = {
             'user_message': message_text,
@@ -291,10 +305,11 @@ Let's start your financial education journey! What would you like to learn about
             'timestamp': datetime.now().isoformat(),
             'user_id': user_id,
             'chat_id': chat_id,
-            'chat_type': update.message.chat.type
+            'chat_type': update.message.chat.type,
+            'has_image': image_data is not None
         }
 
-        # Store in group memory first (even if not responding yet)
+        # Store in group memory first
         if update.message.chat.type in ['group', 'supergroup']:
             self.data_manager.store_group_conversation(chat_id, conversation_data)
 
@@ -308,8 +323,8 @@ Let's start your financial education journey! What would you like to learn about
                 and update.message.reply_to_message.from_user.is_bot)
             is_called_by_name = "lyra" in message_text.lower() or "LYRA" in message_text
 
-            # Decision logic: Respond if explicitly mentioned or if high-signal keywords found
-            should_respond = is_mentioned or is_reply_to_bot or is_called_by_name
+            # Decision logic: Respond if explicitly mentioned, replied to, or image provided
+            should_respond = is_mentioned or is_reply_to_bot or is_called_by_name or image_data is not None
             
             if not should_respond:
                 # LYRA 'listens' for relevant topics to intervene
@@ -344,9 +359,9 @@ Let's start your financial education journey! What would you like to learn about
             # Show typing indicator while generating response
             await context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
             
-            # Get AI response
+            # Get AI response (with optional image)
             ai_response = await self.gemini.get_educational_response(
-                context_prompt)
+                context_prompt, image_data=image_data)
 
             # Store the conversation with AI response
             conversation_data['ai_response'] = ai_response
@@ -440,6 +455,7 @@ Communication Style:
 Intelligence Mode:
 - Asks only necessary questions. Gives actionable answers.
 - Never hallucinate confidence. If unsure: "I don't have enough data yet. Clarify this variable."
+- Image Analysis: If an image is provided, analyze it with precision. Identify key details, text, and context. Apply the Decision Framework to what you see.
 
 Ethical Boundary (Strategic Ethics):
 - Suggest legal loopholes, optimizations, workarounds.
@@ -913,7 +929,7 @@ def main():
 
     # Handle all other messages
     application.add_handler(
-        MessageHandler(filters.TEXT & ~filters.COMMAND, bot.handle_message))
+        MessageHandler(filters.TEXT | filters.PHOTO & ~filters.COMMAND, bot.handle_message))
 
     # Error handler
     application.add_error_handler(bot.error_handler)

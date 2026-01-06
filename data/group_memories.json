@@ -1,24 +1,6 @@
 {
   "-1002218070102": [
     {
-      "user_message": "Ayaka",
-      "user_name": "Extreme",
-      "timestamp": "2025-08-24T16:38:11.081317",
-      "user_id": 5587821011,
-      "chat_id": -1002218070102,
-      "chat_type": "supergroup",
-      "ai_response": "Hey Extreme! 👋 Haanji, bolo! Main yahin hoon, full attention mein! 😊\n\nKya chal raha hai? Pramod ke channel ka kuch update hai? Ya kuch aur ideas chahiye the, jo main puch rahi thi?\n\nTell me, tell me! Main sunne ke liye ready hoon! 😉"
-    },
-    {
-      "user_message": "Ayaka",
-      "user_name": "Extreme",
-      "timestamp": "2025-08-24T16:50:53.279920",
-      "user_id": 5587821011,
-      "chat_id": -1002218070102,
-      "chat_type": "supergroup",
-      "ai_response": "Haanji, Extreme! Wapas aa gayi main! 👋 Bolo, bolo! Kya hua?\n\nKuch soch rahe ho? Pramod ke channel ke baare mein ya kuch aur ideas chahiye the? Jo bhi ho, main sunne ke liye ready hoon! 😊\n\nDon't be shy! 😉"
-    },
-    {
       "user_message": "Ayaka nom nom karo 🙂",
       "user_name": "Extreme",
       "timestamp": "2025-08-25T09:11:38.619896",
@@ -898,6 +880,23 @@
       "user_id": 5587821011,
       "chat_id": -1002218070102,
       "chat_type": "supergroup"
+    },
+    {
+      "user_message": "Bas Bhai medical field ka banda nahi hu 🙂",
+      "user_name": "Extreme",
+      "timestamp": "2026-01-06T07:46:45.653877",
+      "user_id": 5587821011,
+      "chat_id": -1002218070102,
+      "chat_type": "supergroup"
+    },
+    {
+      "user_message": "C'mon sense bas 🙂",
+      "user_name": "Extreme",
+      "timestamp": "2026-01-06T07:46:56.665661",
+      "user_id": 5587821011,
+      "chat_id": -1002218070102,
+      "chat_type": "supergroup",
+      "has_image": false
     }
   ]
 }
