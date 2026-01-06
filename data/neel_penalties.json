@@ -6,13 +6,11 @@
       "status": "completed",
       "end_time": "2025-12-25T07:18:10.091707",
       "final_amount": 100
-    },
-    {
-      "start_time": "2026-01-05T11:51:00.050451+00:00",
-      "amount": 100,
-      "status": "completed",
-      "end_time": "2026-01-05T11:51:10.325943+00:00",
-      "final_amount": 100
     }
-  ]
+  ],
+  "current": {
+    "start_time": "2025-12-27T10:45:48.983452+00:00",
+    "amount": 100,
+    "status": "pending"
+  }
 }
