@@ -7,6 +7,7 @@ Features: Persistent memory, progress tracking, educational content
 import logging
 import os
 import asyncio
+import random
 from datetime import datetime, time, timedelta
 from telegram import Update, BotCommand
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
@@ -275,29 +276,13 @@ Let's start your financial education journey! What would you like to learn about
             return
 
         message_text = update.message.text
-
-        # In group chats, only respond if bot is mentioned, replied to, or called by name "LYRA"
-        if update.message.chat.type in ['group', 'supergroup']:
-            bot_username = context.bot.username
-            is_mentioned = f"@{bot_username}" in message_text if bot_username else False
-            is_reply_to_bot = (
-                update.message.reply_to_message
-                and update.message.reply_to_message.from_user
-                and update.message.reply_to_message.from_user.is_bot)
-            is_called_by_name = "lyra" in message_text.lower(
-            ) or "LYRA" in message_text
-
-            if not (is_mentioned or is_reply_to_bot or is_called_by_name):
-                return
-
         user = update.effective_user
         user_id = user.id
         chat_id = update.message.chat.id
 
         # Get user info for display name
         user_info = self.user_manager.get_user_info(user_id)
-        display_name = user_info.get('display_name', user.first_name
-                                     or 'Unknown')
+        display_name = user_info.get('display_name', user.first_name or 'Unknown')
 
         # Store the conversation with chat context
         conversation_data = {
@@ -309,14 +294,40 @@ Let's start your financial education journey! What would you like to learn about
             'chat_type': update.message.chat.type
         }
 
+        # Store in group memory first (even if not responding yet)
+        if update.message.chat.type in ['group', 'supergroup']:
+            self.data_manager.store_group_conversation(chat_id, conversation_data)
+
+        # In group chats, decide whether to respond
+        if update.message.chat.type in ['group', 'supergroup']:
+            bot_username = context.bot.username
+            is_mentioned = f"@{bot_username}" in message_text if bot_username else False
+            is_reply_to_bot = (
+                update.message.reply_to_message
+                and update.message.reply_to_message.from_user
+                and update.message.reply_to_message.from_user.is_bot)
+            is_called_by_name = "lyra" in message_text.lower() or "LYRA" in message_text
+
+            # Decision logic: Respond if explicitly mentioned or if high-signal keywords found
+            should_respond = is_mentioned or is_reply_to_bot or is_called_by_name
+            
+            if not should_respond:
+                # LYRA 'listens' for relevant topics to intervene
+                intervention_keywords = ['crypto', 'bitcoin', 'btc', 'stock', 'market', 'penalty', 'leverage', 'risk', 'strategy', 'help', 'doubt', 'task', 'progress']
+                if any(kw in message_text.lower() for kw in intervention_keywords):
+                    if random.random() < 0.4:  # 40% chance to jump into relevant topics
+                        should_respond = True
+            
+            if not should_respond:
+                return
+
         # Get memories based on chat type
         if update.message.chat.type in ['group', 'supergroup']:
             # For group chats, get group conversation history
             group_memories = self.data_manager.get_group_memories(chat_id)
             user_memories = self.data_manager.get_user_memories(user_id)
             # Combine both for context
-            all_memories = group_memories + user_memories[
-                -5:]  # Include some user history too
+            all_memories = group_memories + user_memories[-5:]  # Include some user history too
         else:
             # For private chats, get individual user memories
             all_memories = self.data_manager.get_user_memories(user_id)
@@ -767,7 +778,7 @@ Current Message: {current_message}
         except Exception as e:
             logger.error(f"Error sending sticker: {e}")
             
-            # Mention Neel in the message
+        # Mention Neel in the message
         await update.message.reply_text(
             f"💀 PENALTY STARTED! 💀\n\n"
             f"Target: @Er_Stranger (Neel)\n"
