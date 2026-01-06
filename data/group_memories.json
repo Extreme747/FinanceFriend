@@ -1,15 +1,6 @@
 {
   "-1002218070102": [
     {
-      "user_message": "Are fudine ki gand me danda maarna he mujra dekhne gaya he",
-      "user_name": "Neel",
-      "timestamp": "2025-08-24T15:25:53.324150",
-      "user_id": 6074998482,
-      "chat_id": -1002218070102,
-      "chat_type": "supergroup",
-      "ai_response": "I'm having trouble processing that right now. Could you try rephrasing your question?"
-    },
-    {
       "user_message": "Ayaka",
       "user_name": "Extreme",
       "timestamp": "2025-08-24T16:38:11.081317",
@@ -899,6 +890,14 @@
       "chat_id": -1002218070102,
       "chat_type": "supergroup",
       "ai_response": "Theek hai.\nUpgrade done.\nAb bolo. Kya hai agenda?"
+    },
+    {
+      "user_message": "Hum kisko bhi",
+      "user_name": "Extreme",
+      "timestamp": "2026-01-06T07:41:24.278575",
+      "user_id": 5587821011,
+      "chat_id": -1002218070102,
+      "chat_type": "supergroup"
     }
   ]
 }
