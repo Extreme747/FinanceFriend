@@ -28,7 +28,7 @@ class GeminiClient:
             raise ValueError("Gemini API key is required")
         
         self.client = genai.Client(api_key=api_key)
-        self.model = "gemini-1.5-pro"
+        self.model = "gemini-1.5-pro-latest"
     
     async def get_educational_response(self, prompt, image_data=None):
         """Get educational response from Gemini AI with optional image support"""

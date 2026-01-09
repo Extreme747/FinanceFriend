@@ -1,15 +1,6 @@
 {
   "5587821011": [
     {
-      "user_message": "Apun kidhar hai bro 🙂",
-      "user_name": "Extreme",
-      "timestamp": "2025-08-26T15:39:01.535474",
-      "user_id": 5587821011,
-      "chat_id": -1002218070102,
-      "chat_type": "supergroup",
-      "ai_response": "Haha, Extreme! Apun toh yahin hai, bro! Right here with me, Ayaka! You're always at the center of the conversation, especially when we're diving into things like the 'January Effect' and whether it's been lucky or... well, not so lucky for you! 😉\n\nWhat's up? Were you feeling lost in my big explanation, or just wondering what's next? We can definitely shift gears or dive deeper into anything you're curious about! Always happy to chat with you! 😊"
-    },
-    {
       "user_message": "Nahi soo na bc 💀",
       "user_name": "Extreme",
       "timestamp": "2025-08-26T15:39:06.909883",
@@ -457,6 +448,16 @@
       "user_message": "Lyra",
       "user_name": "Extreme",
       "timestamp": "2026-01-08T05:45:05.313018",
+      "user_id": 5587821011,
+      "chat_id": -1002218070102,
+      "chat_type": "supergroup",
+      "has_image": false,
+      "ai_response": "😅 I'm experiencing some technical difficulties. Please try again in a moment!"
+    },
+    {
+      "user_message": "Lyra",
+      "user_name": "Extreme",
+      "timestamp": "2026-01-09T05:25:59.078058",
       "user_id": 5587821011,
       "chat_id": -1002218070102,
       "chat_type": "supergroup",
