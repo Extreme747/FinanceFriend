@@ -948,7 +948,7 @@ def main():
     application.add_error_handler(bot.error_handler)
 
     logger.info("Starting Crypto & Stocks Educational Bot...")
-    application.run_polling(allowed_updates=Update.ALL_TYPES)
+    application.run_polling(allowed_updates=Update.ALL_TYPES, drop_pending_updates=True)
 
 
 if __name__ == "__main__":
