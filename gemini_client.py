@@ -5,10 +5,12 @@ Gemini AI client for educational responses
 import os
 import logging
 try:
-    import google.generativeai as genai
+    from google import genai
+    from google.genai import types
 except ImportError as e:
     print(f"Import error: {e}")
     genai = None
+    types = None
 
 logger = logging.getLogger(__name__)
 
@@ -17,17 +19,16 @@ class GeminiClient:
     
     def __init__(self):
         if not genai:
-            logger.error("google-generativeai library not available")
-            raise ValueError("google-generativeai library is required")
+            logger.error("Google GenAI library not available")
+            raise ValueError("Google GenAI library is required")
             
-        api_key = os.getenv("GEMINI_API_KEY")
+        api_key = os.getenv("GEMINI_API_KEY_NEW")
         if not api_key:
-            logger.error("GEMINI_API_KEY not found in environment variables")
+            logger.error("GEMINI_API_KEY_NEW not found in environment variables")
             raise ValueError("Gemini API key is required")
         
-        genai.configure(api_key=api_key)
-        self.model_name = "gemini-1.5-pro-latest"
-        self.model = genai.GenerativeModel(self.model_name)
+        self.client = genai.Client(api_key=api_key)
+        self.model = "gemini-1.5-pro-latest"
     
     async def get_educational_response(self, prompt, image_data=None):
         """Get educational response from Gemini AI with optional image support"""
@@ -86,20 +87,17 @@ Ethical Boundary (Strategic Ethics):
 - If refusing: "That path creates exposure and zero upside. I won't help. Here's a smarter route that keeps your hands clean and power intact."
             """
             
-            contents = [prompt]
+            parts = [types.Part(text=prompt)]
             if image_data:
-                import base64
-                image_blob = {
-                    "mime_type": "image/jpeg",
-                    "data": base64.b64encode(image_data).decode("utf-8")
-                }
-                contents.append(image_blob)
+                parts.append(types.Part(inline_data=types.Blob(mime_type="image/jpeg", data=image_data)))
 
-            # Using standard generativeai model pattern
-            chat = self.model.start_chat(history=[])
-            response = chat.send_message(
-                contents,
-                generation_config=genai.types.GenerationConfig(
+            response = self.client.models.generate_content(
+                model=self.model,
+                contents=[
+                    types.Content(role="user", parts=parts)
+                ],
+                config=types.GenerateContentConfig(
+                    system_instruction=system_instruction,
                     temperature=0.7,
                     max_output_tokens=1000
                 )
@@ -129,7 +127,11 @@ Explanation: [brief explanation of why this is correct]
 Make sure the question is educational and helps reinforce learning.
             """
             
-            response = self.model.generate_content(prompt)
+            response = self.client.models.generate_content(
+                model=self.model,
+                contents=prompt
+            )
+            
             return response.text if response.text else None
             
         except Exception as e:
@@ -151,9 +153,10 @@ Guidelines:
 - Keep it concise but comprehensive
             """
             
-            response = self.model.generate_content(
-                prompt,
-                generation_config=genai.types.GenerationConfig(
+            response = self.client.models.generate_content(
+                model=self.model,
+                contents=prompt,
+                config=types.GenerateContentConfig(
                     temperature=0.6,
                     max_output_tokens=800
                 )

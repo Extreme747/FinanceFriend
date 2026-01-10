@@ -60,3 +60,4 @@ yt-dlp==2025.11.12
 aiohttp
 telegram
 google-generativeai
+python-telegram-bot
