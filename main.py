@@ -281,6 +281,9 @@ Let's start your financial education journey! What would you like to learn about
         user_id = user.id
         chat_id = update.message.chat.id
 
+        # Track message for stats
+        GroupStats.track_message(user.first_name or "Unknown")
+
         # Get user info for display name
         user_info = self.user_manager.get_user_info(user_id)
         display_name = user_info.get('display_name', user.first_name or 'Unknown')
@@ -702,7 +705,7 @@ Current Message: {current_message}
         """Get motivational quote"""
         if not update.message:
             return
-        quote = MotivationalContent.get_random_quote()
+        quote = MotivationalContent.get_daily_quote()
         await update.message.reply_text(quote)
 
     async def tips_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -716,8 +719,7 @@ Current Message: {current_message}
         """View group stats"""
         if not update.message or not update.effective_chat:
             return
-        chat_id = update.effective_chat.id
-        stats = GroupStats.get_group_stats(chat_id)
+        stats = GroupStats.get_stats()
         await update.message.reply_text(stats)
 
     async def gif_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -725,23 +727,19 @@ Current Message: {current_message}
         if not update.message or not context.args:
             await update.message.reply_text("Usage: /gif crypto")
             return
-        query = " ".join(context.args)
-        gif_url = GifManager.get_random_gif(query)
-        if gif_url:
-            await update.message.reply_animation(animation=gif_url)
-        else:
-            await update.message.reply_text("No GIFs found for that query.")
+        gif_text = GifManager.get_gif_emoji()
+        await update.message.reply_text(gif_text)
 
     async def convert_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Convert currency"""
-        if not update.message or len(context.args) < 3:
+        if not update.message or not context.args or len(context.args) < 3:
             await update.message.reply_text("Usage: /convert 100 USD INR")
             return
         try:
             amount = float(context.args[0])
             from_curr = context.args[1].upper()
             to_curr = context.args[2].upper()
-            result = await CurrencyConverter.convert(amount, from_curr, to_curr)
+            result = CurrencyConverter.convert(amount, from_curr, to_curr)
             await update.message.reply_text(result)
         except:
             await update.message.reply_text("Usage: /convert 100 USD INR")
@@ -749,10 +747,10 @@ Current Message: {current_message}
     async def translate_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Translate text"""
         if not update.message or not context.args:
-            await update.message.reply_text("Usage: /translate Hello (to Hindi)")
+            await update.message.reply_text("Usage: /translate Hello")
             return
         text = " ".join(context.args)
-        result = await TranslationHelper.translate(text)
+        result = TranslationHelper.translate(text)
         await update.message.reply_text(result)
 
     async def todo_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -761,24 +759,20 @@ Current Message: {current_message}
             return
         user_id = update.effective_user.id
         if not context.args:
-            todos = TodoManager.get_todos(user_id)
-            if not todos:
-                await update.message.reply_text("Your todo list is empty.")
-            else:
-                msg = "📝 Your Todos:\n" + "\n".join([f"{i+1}. {'✅' if t['done'] else '⭕'} {t['text']}" for i, t in enumerate(todos)])
-                await update.message.reply_text(msg)
+            todos_msg = TodoManager.get_todos(user_id)
+            await update.message.reply_text(todos_msg)
             return
         
         action = context.args[0].lower()
         if action == 'add' and len(context.args) > 1:
             text = " ".join(context.args[1:])
-            TodoManager.add_todo(user_id, text)
-            await update.message.reply_text(f"✅ Added to todo list")
+            res = TodoManager.add_todo(user_id, text)
+            await update.message.reply_text(res)
         elif action == 'done' and len(context.args) > 1:
             try:
-                idx = int(context.args[1]) - 1
-                TodoManager.mark_done(user_id, idx)
-                await update.message.reply_text(f"✅ Marked as done")
+                idx = int(context.args[1])
+                res = TodoManager.complete_todo(user_id, idx)
+                await update.message.reply_text(res)
             except:
                 await update.message.reply_text("Usage: /todo done 1")
         else:
