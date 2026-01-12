@@ -276,6 +276,10 @@ Let's start your financial education journey! What would you like to learn about
         if not update.effective_user or not update.message:
             return
 
+        # Check if the message is from a health check (likely on port 5000)
+        # However, Telegram bot doesn't receive HTTP health checks directly through MessageHandler.
+        # But we can add a simple health check server in post_init if needed.
+
         message_text = update.message.text or update.message.caption or ""
         user = update.effective_user
         user_id = user.id
@@ -861,6 +865,23 @@ Current Message: {current_message}
         """Post-initialization tasks"""
         # Set bot commands
         await self.setup_bot_commands(app)
+        
+        # Start a simple health check server for Replit Publishing
+        # This listens on port 5000 to satisfy the health check
+        from aiohttp import web
+        
+        async def health_check(request):
+            return web.Response(text="OK")
+
+        health_app = web.Application()
+        health_app.router.add_get("/", health_check)
+        health_app.router.add_get("/health", health_check)
+        
+        runner = web.AppRunner(health_app)
+        await runner.setup()
+        site = web.TCPSite(runner, '0.0.0.0', 5000)
+        await site.start()
+        logger.info("Health check server started on port 5000")
         
         # Schedule daily tribute
         # APScheduler is used here for reliability
