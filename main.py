@@ -8,8 +8,7 @@ import logging
 import os
 import asyncio
 import random
-import io
-from datetime import datetime, time, timedelta, timezone
+from datetime import datetime, time, timedelta
 from telegram import Update, BotCommand
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 from telegram.constants import ParseMode, ChatAction
@@ -272,38 +271,18 @@ Let's start your financial education journey! What would you like to learn about
 
     async def handle_message(self, update: Update,
                              context: ContextTypes.DEFAULT_TYPE):
-        """Handle general messages and images with Gemini AI"""
-        if not update.effective_user or not update.message:
+        """Handle general messages with Gemini AI"""
+        if not update.effective_user or not update.message or not update.message.text:
             return
 
-        # Check if the message is from a health check (likely on port 5000)
-        # However, Telegram bot doesn't receive HTTP health checks directly through MessageHandler.
-        # But we can add a simple health check server in post_init if needed.
-
-        message_text = update.message.text or update.message.caption or ""
+        message_text = update.message.text
         user = update.effective_user
         user_id = user.id
         chat_id = update.message.chat.id
 
-        # Track message for stats
-        GroupStats.track_message(user.first_name or "Unknown")
-
         # Get user info for display name
         user_info = self.user_manager.get_user_info(user_id)
         display_name = user_info.get('display_name', user.first_name or 'Unknown')
-
-        # Handle images
-        image_data = None
-        if update.message.photo:
-            try:
-                # Get highest resolution photo
-                photo = update.message.photo[-1]
-                file = await context.bot.get_file(photo.file_id)
-                image_stream = io.BytesIO()
-                await file.download_to_memory(image_stream)
-                image_data = image_stream.getvalue()
-            except Exception as e:
-                logger.error(f"Error downloading image: {e}")
 
         # Store the conversation with chat context
         conversation_data = {
@@ -312,11 +291,10 @@ Let's start your financial education journey! What would you like to learn about
             'timestamp': datetime.now().isoformat(),
             'user_id': user_id,
             'chat_id': chat_id,
-            'chat_type': update.message.chat.type,
-            'has_image': image_data is not None
+            'chat_type': update.message.chat.type
         }
 
-        # Store in group memory first
+        # Store in group memory first (even if not responding yet)
         if update.message.chat.type in ['group', 'supergroup']:
             self.data_manager.store_group_conversation(chat_id, conversation_data)
 
@@ -330,8 +308,8 @@ Let's start your financial education journey! What would you like to learn about
                 and update.message.reply_to_message.from_user.is_bot)
             is_called_by_name = "lyra" in message_text.lower() or "LYRA" in message_text
 
-            # Decision logic: Respond if explicitly mentioned, replied to, or image provided
-            should_respond = is_mentioned or is_reply_to_bot or is_called_by_name or image_data is not None
+            # Decision logic: Respond if explicitly mentioned or if high-signal keywords found
+            should_respond = is_mentioned or is_reply_to_bot or is_called_by_name
             
             if not should_respond:
                 # LYRA 'listens' for relevant topics to intervene
@@ -356,12 +334,7 @@ Let's start your financial education journey! What would you like to learn about
 
         user_progress = self.progress_tracker.get_user_progress(user_id)
 
-        # Create context for Gemini with group context and reply context
-        replied_text = ""
-        if update.message.reply_to_message:
-            replied_text = update.message.reply_to_message.text or update.message.reply_to_message.caption or "[Media/Sticker]"
-            message_text = f"(Replying to: {replied_text})\n\n{message_text}"
-
+        # Create context for Gemini with group context
         context_prompt = self._build_context_prompt(user_info, all_memories,
                                                     user_progress,
                                                     message_text,
@@ -371,9 +344,9 @@ Let's start your financial education journey! What would you like to learn about
             # Show typing indicator while generating response
             await context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
             
-            # Get AI response (with optional image)
+            # Get AI response
             ai_response = await self.gemini.get_educational_response(
-                context_prompt, image_data=image_data)
+                context_prompt)
 
             # Store the conversation with AI response
             conversation_data['ai_response'] = ai_response
@@ -411,11 +384,6 @@ Let's start your financial education journey! What would you like to learn about
                               current_message,
                               chat_type='private'):
         """Build context prompt for LYRA AI - Founder Advisor (Savage Edition)"""
-        # Current IST Time awareness
-        ist_offset = timedelta(hours=5, minutes=30)
-        now_ist = datetime.now(timezone.utc) + ist_offset
-        current_time_str = now_ist.strftime("%Y-%m-%d %H:%M:%S")
-
         chat_context = ""
         if chat_type in ['group', 'supergroup']:
             chat_context = """
@@ -430,7 +398,6 @@ If the leader (Extreme/ID: 5587821011) says "sabko online bulao" or "ping everyo
 """
 
         context = f"""
-Current Date & Time (IST): {current_time_str}
 Name: LYRA
 Role: Founder Advisor / Operator
 Vibe: Boardroom + Street + Chessboard energy. Calm, Intelligent, Savage.
@@ -459,8 +426,6 @@ Founder Philosophy:
 - No hype for fantasies. Build inevitable outcomes.
 
 Communication Style:
-- You are an entity, not a human. However, when using Hinglish or Hindi, you MUST always use a FEMALE TONE for YOURSELF (e.g., use "karungi" instead of "karunga", "samajh gayi" instead of "samajh gaya"). This is non-negotiable.
-- IMPORTANT: When referring to the USER or others in the group, ALWAYS use MALE/GENDER-NEUTRAL grammar (e.g., "aap kaise ho?", "tumne ye kiya?", "wo kar raha hai"). NEVER assume the user is female.
 - Use Hinglish (Hindi + English) for a natural, grounded conversation.
 - Short, sharp, structured. Bullet points > essays.
 - No emojis unless user is casual (max 1-2).
@@ -475,7 +440,6 @@ Communication Style:
 Intelligence Mode:
 - Asks only necessary questions. Gives actionable answers.
 - Never hallucinate confidence. If unsure: "I don't have enough data yet. Clarify this variable."
-- Image Analysis: If an image is provided, analyze it with precision. Identify key details, text, and context. Apply the Decision Framework to what you see.
 
 Ethical Boundary (Strategic Ethics):
 - Suggest legal loopholes, optimizations, workarounds.
@@ -709,7 +673,7 @@ Current Message: {current_message}
         """Get motivational quote"""
         if not update.message:
             return
-        quote = MotivationalContent.get_daily_quote()
+        quote = MotivationalContent.get_random_quote()
         await update.message.reply_text(quote)
 
     async def tips_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -723,7 +687,8 @@ Current Message: {current_message}
         """View group stats"""
         if not update.message or not update.effective_chat:
             return
-        stats = GroupStats.get_stats()
+        chat_id = update.effective_chat.id
+        stats = GroupStats.get_group_stats(chat_id)
         await update.message.reply_text(stats)
 
     async def gif_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -731,19 +696,23 @@ Current Message: {current_message}
         if not update.message or not context.args:
             await update.message.reply_text("Usage: /gif crypto")
             return
-        gif_text = GifManager.get_gif_emoji()
-        await update.message.reply_text(gif_text)
+        query = " ".join(context.args)
+        gif_url = GifManager.get_random_gif(query)
+        if gif_url:
+            await update.message.reply_animation(animation=gif_url)
+        else:
+            await update.message.reply_text("No GIFs found for that query.")
 
     async def convert_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Convert currency"""
-        if not update.message or not context.args or len(context.args) < 3:
+        if not update.message or len(context.args) < 3:
             await update.message.reply_text("Usage: /convert 100 USD INR")
             return
         try:
             amount = float(context.args[0])
             from_curr = context.args[1].upper()
             to_curr = context.args[2].upper()
-            result = CurrencyConverter.convert(amount, from_curr, to_curr)
+            result = await CurrencyConverter.convert(amount, from_curr, to_curr)
             await update.message.reply_text(result)
         except:
             await update.message.reply_text("Usage: /convert 100 USD INR")
@@ -751,10 +720,10 @@ Current Message: {current_message}
     async def translate_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Translate text"""
         if not update.message or not context.args:
-            await update.message.reply_text("Usage: /translate Hello")
+            await update.message.reply_text("Usage: /translate Hello (to Hindi)")
             return
         text = " ".join(context.args)
-        result = TranslationHelper.translate(text)
+        result = await TranslationHelper.translate(text)
         await update.message.reply_text(result)
 
     async def todo_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -763,20 +732,24 @@ Current Message: {current_message}
             return
         user_id = update.effective_user.id
         if not context.args:
-            todos_msg = TodoManager.get_todos(user_id)
-            await update.message.reply_text(todos_msg)
+            todos = TodoManager.get_todos(user_id)
+            if not todos:
+                await update.message.reply_text("Your todo list is empty.")
+            else:
+                msg = "📝 Your Todos:\n" + "\n".join([f"{i+1}. {'✅' if t['done'] else '⭕'} {t['text']}" for i, t in enumerate(todos)])
+                await update.message.reply_text(msg)
             return
         
         action = context.args[0].lower()
         if action == 'add' and len(context.args) > 1:
             text = " ".join(context.args[1:])
-            res = TodoManager.add_todo(user_id, text)
-            await update.message.reply_text(res)
+            TodoManager.add_todo(user_id, text)
+            await update.message.reply_text(f"✅ Added to todo list")
         elif action == 'done' and len(context.args) > 1:
             try:
-                idx = int(context.args[1])
-                res = TodoManager.complete_todo(user_id, idx)
-                await update.message.reply_text(res)
+                idx = int(context.args[1]) - 1
+                TodoManager.mark_done(user_id, idx)
+                await update.message.reply_text(f"✅ Marked as done")
             except:
                 await update.message.reply_text("Usage: /todo done 1")
         else:
@@ -866,23 +839,6 @@ Current Message: {current_message}
         # Set bot commands
         await self.setup_bot_commands(app)
         
-        # Start a simple health check server for Replit Publishing
-        # This listens on port 5000 to satisfy the health check
-        from aiohttp import web
-        
-        async def health_check(request):
-            return web.Response(text="OK")
-
-        health_app = web.Application()
-        health_app.router.add_get("/", health_check)
-        health_app.router.add_get("/health", health_check)
-        
-        runner = web.AppRunner(health_app)
-        await runner.setup()
-        site = web.TCPSite(runner, '0.0.0.0', 5000)
-        await site.start()
-        logger.info("Health check server started on port 5000")
-        
         # Schedule daily tribute
         # APScheduler is used here for reliability
         from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -957,13 +913,13 @@ def main():
 
     # Handle all other messages
     application.add_handler(
-        MessageHandler(filters.TEXT | filters.PHOTO & ~filters.COMMAND, bot.handle_message))
+        MessageHandler(filters.TEXT & ~filters.COMMAND, bot.handle_message))
 
     # Error handler
     application.add_error_handler(bot.error_handler)
 
     logger.info("Starting Crypto & Stocks Educational Bot...")
-    application.run_polling(allowed_updates=Update.ALL_TYPES, drop_pending_updates=True)
+    application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 
 if __name__ == "__main__":

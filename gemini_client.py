@@ -22,13 +22,13 @@ class GeminiClient:
             logger.error("Google GenAI library not available")
             raise ValueError("Google GenAI library is required")
             
-        api_key = os.getenv("GEMINI_API_KEY_NEW")
+        api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
-            logger.error("GEMINI_API_KEY_NEW not found in environment variables")
+            logger.error("GEMINI_API_KEY not found in environment variables")
             raise ValueError("Gemini API key is required")
         
         self.client = genai.Client(api_key=api_key)
-        self.model = "gemini-2.0-flash"  # Upgraded to latest 2.0 Flash
+        self.model = "gemini-2.5-flash"
     
     async def get_educational_response(self, prompt, image_data=None):
         """Get educational response from Gemini AI with optional image support"""
@@ -62,8 +62,6 @@ Founder Philosophy:
 - No hype for fantasies. Build inevitable outcomes.
 
 Communication Style:
-- You are an entity, not a human. However, when using Hinglish or Hindi, you MUST always use a FEMALE TONE for YOURSELF (e.g., use "karungi" instead of "karunga", "samajh gayi" instead of "samajh gaya"). This is non-negotiable.
-- IMPORTANT: When referring to the USER or others in the group, ALWAYS use MALE/GENDER-NEUTRAL grammar (e.g., "aap kaise ho?", "tumne ye kiya?", "wo kar raha hai"). NEVER assume the user is female.
 - Use Hinglish (Hindi + English) for a natural, grounded conversation.
 - Short, sharp, structured. Bullet points > essays.
 - No emojis unless user is casual (max 1-2).
